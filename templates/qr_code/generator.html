@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de QR Code Moderne</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h1>Générateur QR Code</h1>
+            <p class="subtitle">Créez votre QR code personnalisé en quelques clics</p>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_text">{{ form.text.label }}</label>
+                    {{ form.text }}
+                    {% if form.text.errors %}
+                        <div class="error">{{ form.text.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Couleurs du QR Code</label>
+                    <div class="color-picker-group">
+                        <div class="color-picker">
+                            <label for="id_fill_color">Couleur du QR</label>
+                            <div class="color-input-wrapper">
+                                {{ form.fill_color }}
+                                <div class="color-preview" id="fill-color-preview">#000000</div>
+                            </div>
+                        </div>
+                        <div class="color-picker">
+                            <label for="id_bg_color">Couleur de fond</label>
+                            <div class="color-input-wrapper">
+                                {{ form.bg_color }}
+                                <div class="color-preview" id="bg-color-preview">#FFFFFF</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_border_size">{{ form.border_size.label }}</label>
+                    {{ form.border_size }}
+                    {% if form.border_size.errors %}
+                        <div class="error">{{ form.border_size.errors }}</div>
+                    {% endif %}
+                    <small class="help-text">Valeur entre 0 et 20 (0 = pas de bordure)</small>
+                </div>
+
+                <div class="form-group">
+                    <div class="toggle-wrapper">
+                        <span class="toggle-label">{{ form.enable_frame.label }}</span>
+                        <div class="toggle-switch">
+                            {{ form.enable_frame }}
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </div>
+
+                    <div class="frame-section" id="frame-options">
+                        <div class="frame-options">
+                            <div>
+                                <label for="id_frame_width">{{ form.frame_width.label }}</label>
+                                {{ form.frame_width }}
+                                <small class="help-text">Valeur entre 10 et 100 pixels</small>
+                            </div>
+
+                            <div>
+                                <label for="id_frame_color">{{ form.frame_color.label }}</label>
+                                <div class="frame-color-wrapper">
+                                    {{ form.frame_color }}
+                                    <div class="frame-color-preview" id="frame-color-preview">#FFFFFF</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="id_frame_text">{{ form.frame_text.label }}</label>
+                                {{ form.frame_text }}
+                                <small class="help-text">Texte affiché sur le cadre (optionnel)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_logo">{{ form.logo.label }}</label>
+                    <div class="file-upload-wrapper">
+                        <label for="id_logo" class="file-upload-label">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            Ajouter une image/logo
+                        </label>
+                        {{ form.logo }}
+                    </div>
+                    <div class="file-name" id="file-name">Aucun fichier choisi</div>
+                </div>
+
+                <button type="submit" class="generate-btn">Générer le QR Code</button>
+            </form>
+        </div>
+
+        <div class="result-section">
+            {% if qr_image_data %}
+                <div class="qr-result">
+                    <h3>Votre QR Code</h3>
+                    <div class="qr-display">
+                        <img src="{{ qr_image_data }}" alt="QR Code généré" id="qr-img">
+                    </div>
+                    <a href="#" id="download-btn" class="download-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Télécharger
+                    </a>
+                </div>
+            {% else %}
+                <div class="placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <p>Votre QR Code apparaîtra ici</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
