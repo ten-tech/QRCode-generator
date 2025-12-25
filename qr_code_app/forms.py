@@ -308,6 +308,76 @@ class QRCodeForm(forms.Form):
             'class': 'neumorphic-color'
         })
     )
+
+    # Personnalisation design avancée
+    use_gradient = forms.BooleanField(
+        label="Utiliser un dégradé",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'neumorphic-checkbox'
+        })
+    )
+    gradient_color_start = forms.CharField(
+        label="Couleur de départ",
+        initial="#667eea",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'value': '#667eea',
+            'class': 'neumorphic-color'
+        })
+    )
+    gradient_color_end = forms.CharField(
+        label="Couleur de fin",
+        initial="#764ba2",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'value': '#764ba2',
+            'class': 'neumorphic-color'
+        })
+    )
+    gradient_direction = forms.ChoiceField(
+        label="Direction du dégradé",
+        choices=[
+            ('horizontal', 'Horizontal'),
+            ('vertical', 'Vertical'),
+            ('diagonal', 'Diagonal'),
+        ],
+        initial='diagonal',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
+        })
+    )
+
+    module_style = forms.ChoiceField(
+        label="Style des modules",
+        choices=[
+            ('square', 'Carrés'),
+            ('rounded', 'Ronds'),
+            ('rounded-corners', 'Coins arrondis'),
+        ],
+        initial='square',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
+        })
+    )
+
+    global_shape = forms.ChoiceField(
+        label="Forme globale",
+        choices=[
+            ('square', 'Carrée'),
+            ('circle', 'Ronde'),
+        ],
+        initial='square',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
+        })
+    )
     border_size = forms.IntegerField(
         label="Taille de la bordure",
         initial=4,
