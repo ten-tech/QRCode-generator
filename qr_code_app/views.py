@@ -170,9 +170,62 @@ def format_sms(phone, message=""):
     return sms
 
 
+def format_event(title, start="", end="", location="", description=""):
+    """Formate les données en événement iCalendar"""
+    from datetime import datetime
+
+    event = "BEGIN:VEVENT\n"
+    if title:
+        event += f"SUMMARY:{title}\n"
+    if start:
+        # Convertir format datetime-local vers iCal (YYYYMMDDTHHMMSS)
+        try:
+            dt = datetime.fromisoformat(start)
+            event += f"DTSTART:{dt.strftime('%Y%m%dT%H%M%S')}\n"
+        except:
+            pass
+    if end:
+        try:
+            dt = datetime.fromisoformat(end)
+            event += f"DTEND:{dt.strftime('%Y%m%dT%H%M%S')}\n"
+        except:
+            pass
+    if location:
+        event += f"LOCATION:{location}\n"
+    if description:
+        event += f"DESCRIPTION:{description}\n"
+    event += "END:VEVENT"
+    return event
+
+
+def format_geo(latitude, longitude):
+    """Formate les données en géolocalisation"""
+    # Format: geo:latitude,longitude
+    return f"geo:{latitude},{longitude}"
+
+
+def format_payment(payment_type, recipient, amount=""):
+    """Formate les données en URL de paiement"""
+    if payment_type == 'paypal':
+        # PayPal.me format
+        payment = f"https://paypal.me/{recipient}"
+        if amount:
+            payment += f"/{amount}"
+    elif payment_type == 'bitcoin':
+        # Bitcoin URI format
+        payment = f"bitcoin:{recipient}"
+        if amount:
+            payment += f"?amount={amount}"
+    else:
+        payment = ""
+    return payment
+
+
 def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
                      logo=None, enable_frame=False, frame_width=30,
-                     frame_color="#FFFFFF", frame_text=""):
+                     frame_color="#FFFFFF", frame_text="",
+                     use_gradient=False, gradient_color_start="#667eea", gradient_color_end="#764ba2",
+                     gradient_direction="diagonal", module_style="square", global_shape="square"):
     """
     Fonction helper pour générer une image QR code
     Retourne l'image en base64 data URI
@@ -186,7 +239,66 @@ def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
     )
     qr.add_data(text)
     qr.make(fit=True)
-    img = qr.make_image(fill_color=fill_color, back_color=bg_color).convert("RGBA")
+
+    # Si module personnalisé ou gradient, dessine manuellement
+    if module_style != 'square' or use_gradient:
+        # Récupère la matrice QR
+        modules = qr.modules
+        box_size = 10
+        size = (len(modules) + border_size * 2) * box_size
+
+        # Crée une image vide
+        img = Image.new('RGBA', (size, size), bg_color)
+        draw = ImageDraw.Draw(img)
+
+        # Prépare les couleurs (avec ou sans gradient)
+        def get_color_for_position(row, col, max_rows, max_cols):
+            if not use_gradient:
+                return fill_color
+
+            # Parse les couleurs hex
+            r1, g1, b1 = tuple(int(gradient_color_start.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+            r2, g2, b2 = tuple(int(gradient_color_end.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+
+            # Calcule le ratio selon la direction
+            if gradient_direction == 'horizontal':
+                ratio = col / max_cols
+            elif gradient_direction == 'vertical':
+                ratio = row / max_rows
+            else:  # diagonal
+                ratio = (row + col) / (max_rows + max_cols)
+
+            # Interpole les couleurs
+            r = int(r1 + (r2 - r1) * ratio)
+            g = int(g1 + (g2 - g1) * ratio)
+            b = int(b1 + (b2 - b1) * ratio)
+
+            return f'#{r:02x}{g:02x}{b:02x}'
+
+        # Dessine chaque module
+        max_rows = len(modules)
+        max_cols = len(modules[0]) if modules else 0
+
+        for row in range(len(modules)):
+            for col in range(len(modules[row])):
+                if modules[row][col]:
+                    x = (col + border_size) * box_size
+                    y = (row + border_size) * box_size
+                    color = get_color_for_position(row, col, max_rows, max_cols)
+
+                    if module_style == 'rounded':
+                        # Modules ronds
+                        draw.ellipse([x, y, x + box_size, y + box_size], fill=color)
+                    elif module_style == 'rounded-corners':
+                        # Modules avec coins arrondis
+                        radius = box_size // 3
+                        draw.rounded_rectangle([x, y, x + box_size, y + box_size], radius=radius, fill=color)
+                    else:
+                        # Modules carrés
+                        draw.rectangle([x, y, x + box_size, y + box_size], fill=color)
+    else:
+        # Génération standard
+        img = qr.make_image(fill_color=fill_color, back_color=bg_color).convert("RGBA")
 
     # Ajout du logo si fourni
     if logo:
@@ -198,6 +310,19 @@ def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
             img.paste(logo_img, pos, logo_img)
         except:
             pass  # Ignore logo errors in preview
+
+    # Application de la forme globale circulaire
+    if global_shape == 'circle':
+        size = img.size[0]
+        mask = Image.new('L', (size, size), 0)
+        mask_draw = ImageDraw.Draw(mask)
+        mask_draw.ellipse([0, 0, size, size], fill=255)
+
+        # Crée une nouvelle image avec fond transparent
+        circular_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+        circular_img.paste(img, (0, 0))
+        circular_img.putalpha(mask)
+        img = circular_img
 
     # Ajout du cadre si activé
     if enable_frame:
@@ -290,6 +415,25 @@ def qr_preview_api(request):
                 phone=data.get('sms_phone', ''),
                 message=data.get('sms_message', '')
             )
+        elif template_type == 'event':
+            text = format_event(
+                title=data.get('event_title', ''),
+                start=data.get('event_start', ''),
+                end=data.get('event_end', ''),
+                location=data.get('event_location', ''),
+                description=data.get('event_description', '')
+            )
+        elif template_type == 'geo':
+            latitude = data.get('geo_latitude', '')
+            longitude = data.get('geo_longitude', '')
+            if latitude and longitude:
+                text = format_geo(latitude=latitude, longitude=longitude)
+        elif template_type == 'payment':
+            text = format_payment(
+                payment_type=data.get('payment_type', 'paypal'),
+                recipient=data.get('payment_recipient', ''),
+                amount=data.get('payment_amount', '')
+            )
 
         if not text:
             return JsonResponse({'success': False, 'error': 'Données requises'}, status=400)
@@ -301,6 +445,12 @@ def qr_preview_api(request):
         frame_width = int(data.get('frame_width', 30))
         frame_color = data.get('frame_color', '#FFFFFF') or '#FFFFFF'
         frame_text = data.get('frame_text', '')
+        use_gradient = data.get('use_gradient', 'false') == 'true'
+        gradient_color_start = data.get('gradient_color_start', '#667eea') or '#667eea'
+        gradient_color_end = data.get('gradient_color_end', '#764ba2') or '#764ba2'
+        gradient_direction = data.get('gradient_direction', 'diagonal') or 'diagonal'
+        module_style = data.get('module_style', 'square') or 'square'
+        global_shape = data.get('global_shape', 'square') or 'square'
 
         # Génère l'image QR
         qr_image = generate_qr_image(
@@ -311,10 +461,84 @@ def qr_preview_api(request):
             enable_frame=enable_frame,
             frame_width=frame_width,
             frame_color=frame_color,
-            frame_text=frame_text
+            frame_text=frame_text,
+            use_gradient=use_gradient,
+            gradient_color_start=gradient_color_start,
+            gradient_color_end=gradient_color_end,
+            gradient_direction=gradient_direction,
+            module_style=module_style,
+            global_shape=global_shape
         )
 
         return JsonResponse({'success': True, 'image': qr_image})
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def batch_generate(request):
+    """
+    Génération en batch de QR codes depuis un fichier CSV
+    Format CSV: text,filename
+    Retourne un fichier ZIP contenant tous les QR codes
+    """
+    import csv
+    import zipfile
+    from io import StringIO, BytesIO as ZipBytesIO
+
+    try:
+        # Vérifie qu'un fichier a été uploadé
+        if 'csv_file' not in request.FILES:
+            return JsonResponse({'success': False, 'error': 'Aucun fichier CSV fourni'}, status=400)
+
+        csv_file = request.FILES['csv_file']
+
+        # Lit le contenu du CSV
+        csv_content = csv_file.read().decode('utf-8')
+        csv_reader = csv.DictReader(StringIO(csv_content))
+
+        # Vérifie que le CSV a les colonnes requises
+        if 'text' not in csv_reader.fieldnames:
+            return JsonResponse({'success': False, 'error': 'Le CSV doit contenir une colonne "text"'}, status=400)
+
+        # Crée un fichier ZIP en mémoire
+        zip_buffer = ZipBytesIO()
+
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            count = 0
+            for row in csv_reader:
+                text = row.get('text', '').strip()
+                if not text:
+                    continue
+
+                # Nom du fichier (utilise le champ filename si présent, sinon utilise un compteur)
+                filename = row.get('filename', f'qrcode_{count + 1}').strip()
+                if not filename.endswith('.png'):
+                    filename += '.png'
+
+                # Génère le QR code (utilise les paramètres par défaut)
+                qr_image_data = generate_qr_image(text=text)
+
+                # Extrait les données base64 et les convertit en bytes
+                if qr_image_data.startswith('data:image/png;base64,'):
+                    base64_data = qr_image_data.split(',')[1]
+                    image_bytes = base64.b64decode(base64_data)
+
+                    # Ajoute au ZIP
+                    zip_file.writestr(filename, image_bytes)
+                    count += 1
+
+        if count == 0:
+            return JsonResponse({'success': False, 'error': 'Aucun QR code généré. Vérifiez le contenu du CSV.'}, status=400)
+
+        # Prépare la réponse avec le fichier ZIP
+        zip_buffer.seek(0)
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="qrcodes_batch.zip"'
+
+        return response
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Erreur lors de la génération: {str(e)}'}, status=500)

@@ -142,6 +142,56 @@ document.addEventListener('DOMContentLoaded', function() {
         frameColorPreview.style.color = getContrastColor(frameColorInput.value);
     }
 
+    // ========== GESTION DU GRADIENT ==========
+    const gradientToggle = document.getElementById('id_use_gradient');
+    const gradientOptions = document.getElementById('gradient-options');
+
+    function toggleGradientOptions() {
+        if (gradientToggle && gradientOptions) {
+            if (gradientToggle.checked) {
+                gradientOptions.style.display = 'block';
+            } else {
+                gradientOptions.style.display = 'none';
+            }
+        }
+    }
+
+    if (gradientToggle) {
+        // Initialise au chargement
+        toggleGradientOptions();
+        gradientToggle.addEventListener('change', toggleGradientOptions);
+    }
+
+    // Aperçu des couleurs du dégradé
+    const gradientStartInput = document.getElementById('id_gradient_color_start');
+    const gradientEndInput = document.getElementById('id_gradient_color_end');
+
+    if (gradientStartInput) {
+        const gradientStartPreview = document.getElementById('gradient-start-preview');
+        gradientStartInput.addEventListener('input', function() {
+            gradientStartPreview.textContent = this.value.toUpperCase();
+            gradientStartPreview.style.background = this.value;
+            gradientStartPreview.style.color = getContrastColor(this.value);
+        });
+        // Initialise l'aperçu
+        gradientStartPreview.textContent = gradientStartInput.value.toUpperCase();
+        gradientStartPreview.style.background = gradientStartInput.value;
+        gradientStartPreview.style.color = getContrastColor(gradientStartInput.value);
+    }
+
+    if (gradientEndInput) {
+        const gradientEndPreview = document.getElementById('gradient-end-preview');
+        gradientEndInput.addEventListener('input', function() {
+            gradientEndPreview.textContent = this.value.toUpperCase();
+            gradientEndPreview.style.background = this.value;
+            gradientEndPreview.style.color = getContrastColor(this.value);
+        });
+        // Initialise l'aperçu
+        gradientEndPreview.textContent = gradientEndInput.value.toUpperCase();
+        gradientEndPreview.style.background = gradientEndInput.value;
+        gradientEndPreview.style.color = getContrastColor(gradientEndInput.value);
+    }
+
     // Affichage du fichier uploadé
     const fileInput = document.getElementById('id_logo');
     const fileName = document.getElementById('file-name');
@@ -302,7 +352,13 @@ document.addEventListener('DOMContentLoaded', function() {
             enable_frame: frameToggle?.checked ? 'true' : 'false',
             frame_width: frameWidthInput?.value || '30',
             frame_color: frameColorInput?.value || '#FFFFFF',
-            frame_text: document.getElementById('id_frame_text')?.value || ''
+            frame_text: document.getElementById('id_frame_text')?.value || '',
+            use_gradient: gradientToggle?.checked ? 'true' : 'false',
+            gradient_color_start: gradientStartInput?.value || '#667eea',
+            gradient_color_end: gradientEndInput?.value || '#764ba2',
+            gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
+            module_style: document.getElementById('id_module_style')?.value || 'square',
+            global_shape: document.getElementById('id_global_shape')?.value || 'square'
         };
 
         // Collecte les données spécifiques au template
@@ -345,6 +401,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
+        } else if (selectedTemplate === 'event') {
+            formData.event_title = document.getElementById('id_event_title')?.value || '';
+            formData.event_start = document.getElementById('id_event_start')?.value || '';
+            formData.event_end = document.getElementById('id_event_end')?.value || '';
+            formData.event_location = document.getElementById('id_event_location')?.value || '';
+            formData.event_description = document.getElementById('id_event_description')?.value || '';
+            if (!formData.event_title) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'geo') {
+            formData.geo_latitude = document.getElementById('id_geo_latitude')?.value || '';
+            formData.geo_longitude = document.getElementById('id_geo_longitude')?.value || '';
+            if (!formData.geo_latitude || !formData.geo_longitude) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'payment') {
+            formData.payment_type = document.getElementById('id_payment_type')?.value || 'paypal';
+            formData.payment_recipient = document.getElementById('id_payment_recipient')?.value || '';
+            formData.payment_amount = document.getElementById('id_payment_amount')?.value || '';
+            if (!formData.payment_recipient) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
         }
 
         // Appelle l'API
@@ -363,6 +444,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     qrImage.style.opacity = '1';
                 }, 50);
+
+                // Sauvegarde dans l'historique
+                addToHistory(data.image, formData);
             }
         })
         .catch(error => {
@@ -399,6 +483,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Template SMS
         document.getElementById('id_sms_phone'),
         document.getElementById('id_sms_message'),
+        // Template Event
+        document.getElementById('id_event_title'),
+        document.getElementById('id_event_start'),
+        document.getElementById('id_event_end'),
+        document.getElementById('id_event_location'),
+        document.getElementById('id_event_description'),
+        // Template Geolocation
+        document.getElementById('id_geo_latitude'),
+        document.getElementById('id_geo_longitude'),
+        // Template Payment
+        document.getElementById('id_payment_type'),
+        document.getElementById('id_payment_recipient'),
+        document.getElementById('id_payment_amount'),
         // Champs communs
         fillColorInput,
         bgColorInput,
@@ -406,7 +503,14 @@ document.addEventListener('DOMContentLoaded', function() {
         frameToggle,
         frameWidthInput,
         frameColorInput,
-        document.getElementById('id_frame_text')
+        document.getElementById('id_frame_text'),
+        // Personnalisation avancée
+        gradientToggle,
+        gradientStartInput,
+        gradientEndInput,
+        document.getElementById('id_gradient_direction'),
+        document.getElementById('id_module_style'),
+        document.getElementById('id_global_shape')
     ];
 
     previewInputs.forEach(input => {
@@ -417,6 +521,127 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// ========== GÉNÉRATION EN BATCH ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const batchFileInput = document.getElementById('batch-csv-file');
+    const batchUploadZone = document.getElementById('batch-upload-zone');
+    const batchFileInfo = document.getElementById('batch-file-info');
+    const batchFilename = document.getElementById('batch-filename');
+    const batchRemove = document.getElementById('batch-remove');
+    const batchGenerateBtn = document.getElementById('batch-generate-btn');
+    const batchProgress = document.getElementById('batch-progress');
+
+    let selectedFile = null;
+
+    // Gestion du changement de fichier
+    if (batchFileInput) {
+        batchFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                selectedFile = file;
+                batchFilename.textContent = file.name;
+                batchFileInfo.style.display = 'flex';
+                batchGenerateBtn.disabled = false;
+            }
+        });
+    }
+
+    // Drag & Drop
+    if (batchUploadZone) {
+        batchUploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('dragover');
+        });
+
+        batchUploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+        });
+
+        batchUploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                selectedFile = file;
+                batchFilename.textContent = file.name;
+                batchFileInfo.style.display = 'flex';
+                batchGenerateBtn.disabled = false;
+            }
+        });
+    }
+
+    // Bouton de suppression du fichier
+    if (batchRemove) {
+        batchRemove.addEventListener('click', function() {
+            selectedFile = null;
+            batchFileInput.value = '';
+            batchFileInfo.style.display = 'none';
+            batchGenerateBtn.disabled = true;
+        });
+    }
+
+    // Génération du ZIP
+    if (batchGenerateBtn) {
+        batchGenerateBtn.addEventListener('click', async function() {
+            if (!selectedFile) return;
+
+            // Affiche la barre de progression
+            batchProgress.style.display = 'block';
+            batchGenerateBtn.disabled = true;
+
+            try {
+                // Prépare le FormData
+                const formData = new FormData();
+                formData.append('csv_file', selectedFile);
+
+                // Envoie la requête
+                const response = await fetch('/api/batch', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Erreur lors de la génération');
+                }
+
+                // Télécharge le fichier ZIP
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'qrcodes_batch.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                // Réinitialise
+                selectedFile = null;
+                batchFileInput.value = '';
+                batchFileInfo.style.display = 'none';
+
+                // Feedback visuel
+                const originalHTML = batchGenerateBtn.innerHTML;
+                batchGenerateBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>Terminé !';
+                setTimeout(() => {
+                    batchGenerateBtn.innerHTML = originalHTML;
+                }, 2000);
+
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            } finally {
+                batchProgress.style.display = 'none';
+                batchGenerateBtn.disabled = false;
+            }
+        });
+    }
+});
 // Fonction pour obtenir une couleur de texte contrastée
 function getContrastColor(hexcolor) {
     // Retire le # si présent
@@ -445,3 +670,262 @@ function generateVCardText(name, org, phone, email, url) {
     vcard += "END:VCARD";
     return vcard;
 }
+
+// ========== GESTION DE L'HISTORIQUE ==========
+const MAX_HISTORY = 10;
+
+// Charge l'historique depuis localStorage
+function loadHistory() {
+    const history = localStorage.getItem('qr_history');
+    return history ? JSON.parse(history) : [];
+}
+
+// Sauvegarde l'historique dans localStorage
+function saveHistory(history) {
+    localStorage.setItem('qr_history', JSON.stringify(history));
+}
+
+// Ajoute un QR code à l'historique
+function addToHistory(image, config) {
+    const history = loadHistory();
+    const newItem = {
+        id: Date.now(),
+        image: image,
+        config: config,
+        timestamp: Date.now()
+    };
+    
+    // Ajoute en début de liste
+    history.unshift(newItem);
+    
+    // Limite à MAX_HISTORY items
+    if (history.length > MAX_HISTORY) {
+        history.pop();
+    }
+    
+    saveHistory(history);
+}
+
+// Supprime un item de l'historique
+function deleteHistoryItem(id) {
+    let history = loadHistory();
+    history = history.filter(item => item.id !== id);
+    saveHistory(history);
+    displayHistory();
+}
+
+// Vide tout l'historique
+function clearHistory() {
+    localStorage.removeItem('qr_history');
+    displayHistory();
+}
+
+// Affiche l'historique dans le modal
+function displayHistory() {
+    const history = loadHistory();
+    const grid = document.getElementById('history-grid');
+    const emptyState = document.getElementById('history-empty');
+    
+    if (history.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    grid.style.display = 'grid';
+    emptyState.style.display = 'none';
+    grid.innerHTML = '';
+    
+    history.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'history-item';
+        
+        const date = new Date(item.timestamp);
+        const dateStr = date.toLocaleDateString('fr-FR', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric'
+        });
+        
+        itemDiv.innerHTML = `
+            <button class="history-item-delete" onclick="deleteHistoryItem(${item.id}); event.stopPropagation();">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <img src="${item.image}" alt="QR Code">
+            <div class="history-item-date">${dateStr}</div>
+        `;
+        
+        itemDiv.addEventListener('click', () => {
+            restoreFromHistory(item.config);
+            closeHistoryModal();
+        });
+        
+        grid.appendChild(itemDiv);
+    });
+}
+
+// Restaure une configuration depuis l'historique
+function restoreFromHistory(config) {
+    // Restaure le type de template
+    if (config.template_type) {
+        const templateRadio = document.querySelector(`input[name="template_type"][value="${config.template_type}"]`);
+        if (templateRadio) {
+            templateRadio.checked = true;
+            switchTemplate();
+        }
+    }
+    
+    // Restaure les champs selon le template
+    if (config.template_type === 'text' && config.text) {
+        const textInput = document.getElementById('id_text');
+        if (textInput) textInput.value = config.text;
+    } else if (config.template_type === 'vcard') {
+        if (config.vcard_name) document.getElementById('id_vcard_name').value = config.vcard_name;
+        if (config.vcard_org) document.getElementById('id_vcard_org').value = config.vcard_org;
+        if (config.vcard_phone) document.getElementById('id_vcard_phone').value = config.vcard_phone;
+        if (config.vcard_email) document.getElementById('id_vcard_email').value = config.vcard_email;
+        if (config.vcard_url) document.getElementById('id_vcard_url').value = config.vcard_url;
+    } else if (config.template_type === 'wifi') {
+        if (config.wifi_ssid) document.getElementById('id_wifi_ssid').value = config.wifi_ssid;
+        if (config.wifi_password) document.getElementById('id_wifi_password').value = config.wifi_password;
+        if (config.wifi_security) document.getElementById('id_wifi_security').value = config.wifi_security;
+    } else if (config.template_type === 'email') {
+        if (config.email_to) document.getElementById('id_email_to').value = config.email_to;
+        if (config.email_subject) document.getElementById('id_email_subject').value = config.email_subject;
+        if (config.email_body) document.getElementById('id_email_body').value = config.email_body;
+    } else if (config.template_type === 'sms') {
+        if (config.sms_phone) document.getElementById('id_sms_phone').value = config.sms_phone;
+        if (config.sms_message) document.getElementById('id_sms_message').value = config.sms_message;
+    } else if (config.template_type === 'event') {
+        if (config.event_title) document.getElementById('id_event_title').value = config.event_title;
+        if (config.event_start) document.getElementById('id_event_start').value = config.event_start;
+        if (config.event_end) document.getElementById('id_event_end').value = config.event_end;
+        if (config.event_location) document.getElementById('id_event_location').value = config.event_location;
+        if (config.event_description) document.getElementById('id_event_description').value = config.event_description;
+    } else if (config.template_type === 'geo') {
+        if (config.geo_latitude) document.getElementById('id_geo_latitude').value = config.geo_latitude;
+        if (config.geo_longitude) document.getElementById('id_geo_longitude').value = config.geo_longitude;
+    } else if (config.template_type === 'payment') {
+        if (config.payment_type) document.getElementById('id_payment_type').value = config.payment_type;
+        if (config.payment_recipient) document.getElementById('id_payment_recipient').value = config.payment_recipient;
+        if (config.payment_amount) document.getElementById('id_payment_amount').value = config.payment_amount;
+    }
+
+    // Restaure les couleurs
+    if (config.fill_color) {
+        const fillInput = document.getElementById('id_fill_color');
+        if (fillInput) {
+            fillInput.value = config.fill_color;
+            const fillPreview = document.getElementById('fill-color-preview');
+            if (fillPreview) {
+                fillPreview.textContent = config.fill_color.toUpperCase();
+                fillPreview.style.background = config.fill_color;
+                fillPreview.style.color = getContrastColor(config.fill_color);
+            }
+        }
+    }
+    
+    if (config.bg_color) {
+        const bgInput = document.getElementById('id_bg_color');
+        if (bgInput) {
+            bgInput.value = config.bg_color;
+            const bgPreview = document.getElementById('bg-color-preview');
+            if (bgPreview) {
+                bgPreview.textContent = config.bg_color.toUpperCase();
+                bgPreview.style.background = config.bg_color;
+                bgPreview.style.color = getContrastColor(config.bg_color);
+            }
+        }
+    }
+    
+    // Restaure la bordure
+    if (config.border_size !== undefined) {
+        const borderInput = document.getElementById('id_border_size');
+        if (borderInput) borderInput.value = config.border_size;
+    }
+    
+    // Restaure le cadre
+    if (config.enable_frame !== undefined) {
+        const frameToggle = document.getElementById('id_enable_frame');
+        if (frameToggle) {
+            frameToggle.checked = config.enable_frame === 'true';
+            toggleFrameOptions();
+        }
+    }
+    
+    if (config.frame_width) {
+        const frameWidthInput = document.getElementById('id_frame_width');
+        if (frameWidthInput) frameWidthInput.value = config.frame_width;
+    }
+    
+    if (config.frame_color) {
+        const frameColorInput = document.getElementById('id_frame_color');
+        if (frameColorInput) {
+            frameColorInput.value = config.frame_color;
+            const frameColorPreview = document.getElementById('frame-color-preview');
+            if (frameColorPreview) {
+                frameColorPreview.textContent = config.frame_color.toUpperCase();
+                frameColorPreview.style.background = config.frame_color;
+                frameColorPreview.style.color = getContrastColor(config.frame_color);
+            }
+        }
+    }
+    
+    if (config.frame_text) {
+        const frameTextInput = document.getElementById('id_frame_text');
+        if (frameTextInput) frameTextInput.value = config.frame_text;
+    }
+    
+    // Déclenche l'aperçu
+    debouncedPreview();
+}
+
+// Ouvre le modal historique
+function openHistoryModal() {
+    const modal = document.getElementById('history-modal');
+    modal.classList.add('active');
+    displayHistory();
+}
+
+// Ferme le modal historique
+function closeHistoryModal() {
+    const modal = document.getElementById('history-modal');
+    modal.classList.remove('active');
+}
+
+// Event listeners pour l'historique
+document.addEventListener('DOMContentLoaded', function() {
+    const historyBtn = document.getElementById('history-btn');
+    const historyClose = document.getElementById('history-close');
+    const historyClear = document.getElementById('history-clear');
+    const historyModal = document.getElementById('history-modal');
+    
+    if (historyBtn) {
+        historyBtn.addEventListener('click', openHistoryModal);
+    }
+    
+    if (historyClose) {
+        historyClose.addEventListener('click', closeHistoryModal);
+    }
+    
+    if (historyClear) {
+        historyClear.addEventListener('click', () => {
+            if (confirm('Voulez-vous vraiment vider tout l\'historique ?')) {
+                clearHistory();
+            }
+        });
+    }
+    
+    // Ferme le modal en cliquant en dehors
+    if (historyModal) {
+        historyModal.addEventListener('click', (e) => {
+            if (e.target === historyModal) {
+                closeHistoryModal();
+            }
+        });
+    }
+});
+

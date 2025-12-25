@@ -8,6 +8,9 @@ class QRCodeForm(forms.Form):
         ('wifi', 'WiFi'),
         ('email', 'Email'),
         ('sms', 'SMS'),
+        ('event', 'Événement'),
+        ('geo', 'Localisation'),
+        ('payment', 'Paiement'),
     ]
 
     template_type = forms.ChoiceField(
@@ -173,6 +176,120 @@ class QRCodeForm(forms.Form):
         })
     )
 
+    # Event/Calendar fields
+    event_title = forms.CharField(
+        label="Titre de l'événement",
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: Réunion équipe',
+            'data-template': 'event'
+        })
+    )
+    event_start = forms.DateTimeField(
+        label="Date et heure de début",
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'neumorphic-input',
+            'type': 'datetime-local',
+            'data-template': 'event'
+        })
+    )
+    event_end = forms.DateTimeField(
+        label="Date et heure de fin",
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'neumorphic-input',
+            'type': 'datetime-local',
+            'data-template': 'event'
+        })
+    )
+    event_location = forms.CharField(
+        label="Lieu",
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: Salle de conférence A',
+            'data-template': 'event'
+        })
+    )
+    event_description = forms.CharField(
+        label="Description",
+        max_length=500,
+        required=False,
+        widget=forms.Textarea(attrs={
+            'rows': 3,
+            'class': 'neumorphic-input',
+            'placeholder': 'Description de l\'événement...',
+            'data-template': 'event'
+        })
+    )
+
+    # Geolocation fields
+    geo_latitude = forms.DecimalField(
+        label="Latitude",
+        max_digits=9,
+        decimal_places=6,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: 48.856614',
+            'step': '0.000001',
+            'data-template': 'geo'
+        })
+    )
+    geo_longitude = forms.DecimalField(
+        label="Longitude",
+        max_digits=9,
+        decimal_places=6,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: 2.352222',
+            'step': '0.000001',
+            'data-template': 'geo'
+        })
+    )
+
+    # Payment fields
+    payment_type = forms.ChoiceField(
+        label="Type de paiement",
+        choices=[
+            ('paypal', 'PayPal'),
+            ('bitcoin', 'Bitcoin'),
+        ],
+        initial='paypal',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input',
+            'data-template': 'payment'
+        })
+    )
+    payment_recipient = forms.CharField(
+        label="Destinataire",
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: username ou adresse BTC',
+            'data-template': 'payment'
+        })
+    )
+    payment_amount = forms.DecimalField(
+        label="Montant",
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: 10.00',
+            'step': '0.01',
+            'data-template': 'payment'
+        })
+    )
+
     fill_color = forms.CharField(
         label="Couleur du QR",
         initial="#000000",
@@ -189,6 +306,76 @@ class QRCodeForm(forms.Form):
             'type': 'color',
             'value': '#FFFFFF',
             'class': 'neumorphic-color'
+        })
+    )
+
+    # Personnalisation design avancée
+    use_gradient = forms.BooleanField(
+        label="Utiliser un dégradé",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'neumorphic-checkbox'
+        })
+    )
+    gradient_color_start = forms.CharField(
+        label="Couleur de départ",
+        initial="#667eea",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'value': '#667eea',
+            'class': 'neumorphic-color'
+        })
+    )
+    gradient_color_end = forms.CharField(
+        label="Couleur de fin",
+        initial="#764ba2",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'value': '#764ba2',
+            'class': 'neumorphic-color'
+        })
+    )
+    gradient_direction = forms.ChoiceField(
+        label="Direction du dégradé",
+        choices=[
+            ('horizontal', 'Horizontal'),
+            ('vertical', 'Vertical'),
+            ('diagonal', 'Diagonal'),
+        ],
+        initial='diagonal',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
+        })
+    )
+
+    module_style = forms.ChoiceField(
+        label="Style des modules",
+        choices=[
+            ('square', 'Carrés'),
+            ('rounded', 'Ronds'),
+            ('rounded-corners', 'Coins arrondis'),
+        ],
+        initial='square',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
+        })
+    )
+
+    global_shape = forms.ChoiceField(
+        label="Forme globale",
+        choices=[
+            ('square', 'Carrée'),
+            ('circle', 'Ronde'),
+        ],
+        initial='square',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
         })
     )
     border_size = forms.IntegerField(
@@ -250,4 +437,16 @@ class QRCodeForm(forms.Form):
             'accept': 'image/*',
             'class': 'neumorphic-file'
         })
-    )   
+    )
+
+
+class BatchQRCodeForm(forms.Form):
+    """Formulaire pour la génération en batch"""
+    csv_file = forms.FileField(
+        label="Fichier CSV",
+        required=True,
+        widget=forms.FileInput(attrs={
+            'accept': '.csv',
+            'class': 'neumorphic-file'
+        })
+    )
