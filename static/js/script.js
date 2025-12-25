@@ -521,6 +521,127 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// ========== GÉNÉRATION EN BATCH ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const batchFileInput = document.getElementById('batch-csv-file');
+    const batchUploadZone = document.getElementById('batch-upload-zone');
+    const batchFileInfo = document.getElementById('batch-file-info');
+    const batchFilename = document.getElementById('batch-filename');
+    const batchRemove = document.getElementById('batch-remove');
+    const batchGenerateBtn = document.getElementById('batch-generate-btn');
+    const batchProgress = document.getElementById('batch-progress');
+
+    let selectedFile = null;
+
+    // Gestion du changement de fichier
+    if (batchFileInput) {
+        batchFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                selectedFile = file;
+                batchFilename.textContent = file.name;
+                batchFileInfo.style.display = 'flex';
+                batchGenerateBtn.disabled = false;
+            }
+        });
+    }
+
+    // Drag & Drop
+    if (batchUploadZone) {
+        batchUploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('dragover');
+        });
+
+        batchUploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+        });
+
+        batchUploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                selectedFile = file;
+                batchFilename.textContent = file.name;
+                batchFileInfo.style.display = 'flex';
+                batchGenerateBtn.disabled = false;
+            }
+        });
+    }
+
+    // Bouton de suppression du fichier
+    if (batchRemove) {
+        batchRemove.addEventListener('click', function() {
+            selectedFile = null;
+            batchFileInput.value = '';
+            batchFileInfo.style.display = 'none';
+            batchGenerateBtn.disabled = true;
+        });
+    }
+
+    // Génération du ZIP
+    if (batchGenerateBtn) {
+        batchGenerateBtn.addEventListener('click', async function() {
+            if (!selectedFile) return;
+
+            // Affiche la barre de progression
+            batchProgress.style.display = 'block';
+            batchGenerateBtn.disabled = true;
+
+            try {
+                // Prépare le FormData
+                const formData = new FormData();
+                formData.append('csv_file', selectedFile);
+
+                // Envoie la requête
+                const response = await fetch('/api/batch', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Erreur lors de la génération');
+                }
+
+                // Télécharge le fichier ZIP
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'qrcodes_batch.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                // Réinitialise
+                selectedFile = null;
+                batchFileInput.value = '';
+                batchFileInfo.style.display = 'none';
+
+                // Feedback visuel
+                const originalHTML = batchGenerateBtn.innerHTML;
+                batchGenerateBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>Terminé !';
+                setTimeout(() => {
+                    batchGenerateBtn.innerHTML = originalHTML;
+                }, 2000);
+
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            } finally {
+                batchProgress.style.display = 'none';
+                batchGenerateBtn.disabled = false;
+            }
+        });
+    }
+});
 // Fonction pour obtenir une couleur de texte contrastée
 function getContrastColor(hexcolor) {
     // Retire le # si présent
