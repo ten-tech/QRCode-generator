@@ -542,3 +542,225 @@ def batch_generate(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'Erreur lors de la génération: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def export_pdf(request):
+    """
+    Export du QR code en format PDF haute résolution (600 DPI)
+    Idéal pour l'impression professionnelle
+    """
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import inch
+
+    try:
+        data = json.loads(request.body)
+
+        # Récupère le type de template
+        template_type = data.get('template_type', 'text')
+
+        # Génère le texte selon le template (même logique que preview)
+        text = ''
+        if template_type == 'text':
+            text = data.get('text', '')
+        elif template_type == 'vcard':
+            text = format_vcard(
+                name=data.get('vcard_name', ''),
+                org=data.get('vcard_org', ''),
+                phone=data.get('vcard_phone', ''),
+                email=data.get('vcard_email', ''),
+                url=data.get('vcard_url', '')
+            )
+        elif template_type == 'wifi':
+            text = format_wifi(
+                ssid=data.get('wifi_ssid', ''),
+                password=data.get('wifi_password', ''),
+                security=data.get('wifi_security', 'WPA')
+            )
+        elif template_type == 'email':
+            text = format_email(
+                to=data.get('email_to', ''),
+                subject=data.get('email_subject', ''),
+                body=data.get('email_body', '')
+            )
+        elif template_type == 'sms':
+            text = format_sms(
+                phone=data.get('sms_phone', ''),
+                message=data.get('sms_message', '')
+            )
+        elif template_type == 'event':
+            text = format_event(
+                title=data.get('event_title', ''),
+                start=data.get('event_start', ''),
+                end=data.get('event_end', ''),
+                location=data.get('event_location', ''),
+                description=data.get('event_description', '')
+            )
+        elif template_type == 'geo':
+            latitude = data.get('geo_latitude', '')
+            longitude = data.get('geo_longitude', '')
+            if latitude and longitude:
+                text = format_geo(latitude=latitude, longitude=longitude)
+        elif template_type == 'payment':
+            text = format_payment(
+                payment_type=data.get('payment_type', 'paypal'),
+                recipient=data.get('payment_recipient', ''),
+                amount=data.get('payment_amount', '')
+            )
+
+        if not text:
+            return JsonResponse({'success': False, 'error': 'Données requises'}, status=400)
+
+        # Récupère les paramètres de personnalisation
+        fill_color = data.get('fill_color', '#000000') or '#000000'
+        bg_color = data.get('bg_color', '#FFFFFF') or '#FFFFFF'
+        border_size = int(data.get('border_size', 4))
+        enable_frame = data.get('enable_frame', 'false') == 'true'
+        frame_width = int(data.get('frame_width', 30))
+        frame_color = data.get('frame_color', '#FFFFFF') or '#FFFFFF'
+        frame_text = data.get('frame_text', '')
+        use_gradient = data.get('use_gradient', 'false') == 'true'
+        gradient_color_start = data.get('gradient_color_start', '#667eea') or '#667eea'
+        gradient_color_end = data.get('gradient_color_end', '#764ba2') or '#764ba2'
+        gradient_direction = data.get('gradient_direction', 'diagonal') or 'diagonal'
+        module_style = data.get('module_style', 'square') or 'square'
+        global_shape = data.get('global_shape', 'square') or 'square'
+
+        # Génère le QR code en haute résolution (600 DPI)
+        # Pour 600 DPI, on utilise un box_size plus grand
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=25,  # Plus grand pour haute résolution
+            border=border_size
+        )
+        qr.add_data(text)
+        qr.make(fit=True)
+
+        # Génère l'image haute résolution
+        if module_style != 'square' or use_gradient:
+            modules = qr.modules
+            box_size = 25
+            size = (len(modules) + border_size * 2) * box_size
+            img = Image.new('RGBA', (size, size), bg_color)
+            draw = ImageDraw.Draw(img)
+
+            def get_color_for_position(row, col, max_rows, max_cols):
+                if not use_gradient:
+                    return fill_color
+                r1, g1, b1 = tuple(int(gradient_color_start.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+                r2, g2, b2 = tuple(int(gradient_color_end.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+                if gradient_direction == 'horizontal':
+                    ratio = col / max_cols
+                elif gradient_direction == 'vertical':
+                    ratio = row / max_rows
+                else:
+                    ratio = (row + col) / (max_rows + max_cols)
+                r = int(r1 + (r2 - r1) * ratio)
+                g = int(g1 + (g2 - g1) * ratio)
+                b = int(b1 + (b2 - b1) * ratio)
+                return f'#{r:02x}{g:02x}{b:02x}'
+
+            max_rows = len(modules)
+            max_cols = len(modules[0]) if modules else 0
+            for row in range(len(modules)):
+                for col in range(len(modules[row])):
+                    if modules[row][col]:
+                        x = (col + border_size) * box_size
+                        y = (row + border_size) * box_size
+                        color = get_color_for_position(row, col, max_rows, max_cols)
+                        if module_style == 'rounded':
+                            draw.ellipse([x, y, x + box_size, y + box_size], fill=color)
+                        elif module_style == 'rounded-corners':
+                            radius = box_size // 3
+                            draw.rounded_rectangle([x, y, x + box_size, y + box_size], radius=radius, fill=color)
+                        else:
+                            draw.rectangle([x, y, x + box_size, y + box_size], fill=color)
+        else:
+            img = qr.make_image(fill_color=fill_color, back_color=bg_color).convert("RGBA")
+
+        # Application de la forme circulaire si demandée
+        if global_shape == 'circle':
+            size = img.size[0]
+            mask = Image.new('L', (size, size), 0)
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.ellipse([0, 0, size, size], fill=255)
+            circular_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+            circular_img.paste(img, (0, 0))
+            circular_img.putalpha(mask)
+            img = circular_img
+
+        # Ajout du cadre si activé
+        if enable_frame:
+            text_zone_height = 0
+            if frame_text:
+                text_zone_height = max(60, frame_width)
+            new_width = img.size[0] + (2 * frame_width)
+            new_height = img.size[1] + (2 * frame_width) + text_zone_height
+            framed_img = Image.new("RGBA", (new_width, new_height), frame_color)
+            qr_position = (frame_width, frame_width)
+            framed_img.paste(img, qr_position)
+
+            if frame_text:
+                draw = ImageDraw.Draw(framed_img)
+                frame_rgb = tuple(int(frame_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+                luminance = (0.299 * frame_rgb[0] + 0.587 * frame_rgb[1] + 0.114 * frame_rgb[2]) / 255
+                text_zone_bg = "#FFFFFF" if luminance < 0.5 else "#000000"
+                text_color = "#000000" if luminance < 0.5 else "#FFFFFF"
+                text_zone_y_start = frame_width + img.size[1]
+                draw.rectangle(
+                    [(frame_width, text_zone_y_start),
+                     (new_width - frame_width, text_zone_y_start + text_zone_height)],
+                    fill=text_zone_bg
+                )
+                try:
+                    font_size = max(20, min(text_zone_height - 10, 48))
+                    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+                except:
+                    font = ImageFont.load_default()
+                bbox = draw.textbbox((0, 0), frame_text, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                text_x = (new_width - text_width) // 2
+                text_y = text_zone_y_start + (text_zone_height - text_height) // 2
+                draw.text((text_x, text_y), frame_text, fill=text_color, font=font)
+
+            img = framed_img
+
+        # Sauvegarde l'image temporairement
+        img_buffer = BytesIO()
+        img.save(img_buffer, format='PNG', dpi=(600, 600))
+        img_buffer.seek(0)
+
+        # Crée le PDF
+        pdf_buffer = BytesIO()
+        c = canvas.Canvas(pdf_buffer, pagesize=letter)
+
+        # Calcule les dimensions pour centrer le QR code
+        page_width, page_height = letter
+        # Taille du QR code sur la page (4 inches = environ 10cm)
+        qr_display_size = 4 * inch
+        x = (page_width - qr_display_size) / 2
+        y = (page_height - qr_display_size) / 2
+
+        # Sauvegarde l'image temporairement pour reportlab
+        temp_img_path = '/tmp/qr_temp.png'
+        img.save(temp_img_path, format='PNG', dpi=(600, 600))
+
+        # Dessine l'image sur le PDF
+        c.drawImage(temp_img_path, x, y, width=qr_display_size, height=qr_display_size, preserveAspectRatio=True)
+
+        # Finalise le PDF
+        c.save()
+
+        # Prépare la réponse
+        pdf_buffer.seek(0)
+        response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="qrcode_{int(data.get("timestamp", 0))}.pdf"'
+
+        return response
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Erreur lors de la génération PDF: {str(e)}'}, status=500)
