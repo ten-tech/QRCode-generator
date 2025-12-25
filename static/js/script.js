@@ -125,6 +125,90 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Real-time preview with debounce
+    const textInput = document.getElementById('id_text');
+    const qrImage = document.getElementById('qr-img');
+    const qrDisplay = document.querySelector('.qr-display');
+    let previewTimeout = null;
+
+    // Create loading spinner
+    const loadingSpinner = document.createElement('div');
+    loadingSpinner.className = 'loading-spinner';
+    loadingSpinner.innerHTML = '<div class="spinner-ring"></div>';
+    loadingSpinner.style.display = 'none';
+    if (qrDisplay) {
+        qrDisplay.appendChild(loadingSpinner);
+    }
+
+    function generatePreview() {
+        const text = textInput?.value.trim();
+        if (!text) return;
+
+        // Show spinner
+        if (loadingSpinner) loadingSpinner.style.display = 'flex';
+
+        // Collect form data
+        const formData = {
+            text: text,
+            fill_color: fillColorInput?.value || '#000000',
+            bg_color: bgColorInput?.value || '#FFFFFF',
+            border_size: borderInput?.value || '4',
+            enable_frame: frameToggle?.checked ? 'true' : 'false',
+            frame_width: frameWidthInput?.value || '30',
+            frame_color: frameColorInput?.value || '#FFFFFF',
+            frame_text: document.getElementById('id_frame_text')?.value || ''
+        };
+
+        // Call API
+        fetch('/api/preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && qrImage) {
+                qrImage.src = data.image;
+                qrImage.style.opacity = '0';
+                setTimeout(() => {
+                    qrImage.style.opacity = '1';
+                }, 50);
+            }
+        })
+        .catch(error => {
+            console.error('Preview error:', error);
+        })
+        .finally(() => {
+            if (loadingSpinner) loadingSpinner.style.display = 'none';
+        });
+    }
+
+    function debouncedPreview() {
+        if (previewTimeout) clearTimeout(previewTimeout);
+        previewTimeout = setTimeout(generatePreview, 500);
+    }
+
+    // Add event listeners for real-time preview
+    const previewInputs = [
+        textInput,
+        fillColorInput,
+        bgColorInput,
+        borderInput,
+        frameToggle,
+        frameWidthInput,
+        frameColorInput,
+        document.getElementById('id_frame_text')
+    ];
+
+    previewInputs.forEach(input => {
+        if (input) {
+            const eventType = input.type === 'checkbox' ? 'change' : 'input';
+            input.addEventListener(eventType, debouncedPreview);
+        }
+    });
 });
 
 // Function to get contrasting text color
