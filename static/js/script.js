@@ -47,11 +47,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     templateRadios.forEach(radio => {
         radio.addEventListener('change', function() {
+            // Sauvegarde le template sélectionné dans localStorage
+            localStorage.setItem('selectedTemplate', this.value);
             switchTemplate();
             // Déclenche la mise à jour de l'aperçu quand le template change
             debouncedPreview();
         });
     });
+
+    // Restaure le template sauvegardé
+    const savedTemplate = localStorage.getItem('selectedTemplate');
+    if (savedTemplate) {
+        const savedRadio = document.querySelector(`.template-radio[value="${savedTemplate}"]`);
+        if (savedRadio) {
+            savedRadio.checked = true;
+        }
+    }
 
     // Initialise l'affichage du template
     switchTemplate();
@@ -620,6 +631,9 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener(eventType, debouncedPreview);
         }
     });
+
+    // Génère l'aperçu initial au chargement
+    debouncedPreview();
 });
 
 // ========== GÉNÉRATION EN BATCH ==========
