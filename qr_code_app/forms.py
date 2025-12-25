@@ -437,4 +437,16 @@ class QRCodeForm(forms.Form):
             'accept': 'image/*',
             'class': 'neumorphic-file'
         })
-    )   
+    )
+
+
+class BatchQRCodeForm(forms.Form):
+    """Formulaire pour la génération en batch"""
+    csv_file = forms.FileField(
+        label="Fichier CSV",
+        required=True,
+        widget=forms.FileInput(attrs={
+            'accept': '.csv',
+            'class': 'neumorphic-file'
+        })
+    )
