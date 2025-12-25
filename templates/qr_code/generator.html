@@ -1,401 +1,625 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Générateur de QR Code Moderne</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
     <div class="container">
-        <!-- Contrôles en haut à droite -->
-        <div class="header-controls">
-            <!-- Bouton historique -->
-            <button class="history-btn" id="history-btn" title="Historique">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-            </button>
+      <!-- Contrôles en haut à droite -->
+      <div class="header-controls">
+        <!-- Bouton historique -->
+        <button class="history-btn" id="history-btn" title="Historique">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </button>
 
-            <!-- Toggle thème sombre -->
-            <div class="theme-toggle-btn" id="theme-toggle">
-                <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-                <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
+        <!-- Toggle thème sombre -->
+        <div class="theme-toggle-btn" id="theme-toggle">
+          <svg
+            class="theme-icon sun-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg
+            class="theme-icon moon-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h1>Générateur QR Code</h1>
+        <p class="subtitle">
+          Créez votre QR code personnalisé en quelques clics
+        </p>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- Template Selector -->
+          <div class="form-group">
+            <label>{{ form.template_type.label }}</label>
+            <div class="template-selector">
+              {% for value, label in form.template_type.field.choices %}
+              <label class="template-option">
+                <input type="radio" name="template_type" value="{{ value }}" {% if value == 'text' %}checked{% endif %} class="template-radio">
+                <span class="template-label">{{ label }}</span>
+              </label>
+              {% endfor %}
             </div>
-        </div>
+          </div>
 
-        <div class="form-section">
-            <h1>Générateur QR Code</h1>
-            <p class="subtitle">Créez votre QR code personnalisé en quelques clics</p>
+          <!-- Text/URL Template Fields -->
+          <div class="template-fields" data-template="text">
+            <div class="form-group">
+              <label for="id_text">{{ form.text.label }}</label>
+              {{ form.text }} {% if form.text.errors %}
+              <div class="error">{{ form.text.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
 
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
+          <!-- vCard Template Fields -->
+          <div
+            class="template-fields"
+            data-template="vcard"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_vcard_name">{{ form.vcard_name.label }}</label>
+              {{ form.vcard_name }}
+            </div>
+            <div class="form-group">
+              <label for="id_vcard_org">{{ form.vcard_org.label }}</label>
+              {{ form.vcard_org }}
+            </div>
+            <div class="form-group">
+              <label for="id_vcard_phone">{{ form.vcard_phone.label }}</label>
+              {{ form.vcard_phone }}
+            </div>
+            <div class="form-group">
+              <label for="id_vcard_email">{{ form.vcard_email.label }}</label>
+              {{ form.vcard_email }}
+            </div>
+            <div class="form-group">
+              <label for="id_vcard_url">{{ form.vcard_url.label }}</label>
+              {{ form.vcard_url }}
+            </div>
+          </div>
 
-                <!-- Template Selector -->
-                <div class="form-group">
-                    <label>{{ form.template_type.label }}</label>
-                    <div class="template-selector">
-                        {% for value, label in form.template_type.field.choices %}
-                            <label class="template-option">
-                                <input type="radio" name="template_type" value="{{ value }}"
-                                       {% if value == 'text' %}checked{% endif %}
-                                       class="template-radio">
-                                <span class="template-label">{{ label }}</span>
-                            </label>
-                        {% endfor %}
-                    </div>
+          <!-- WiFi Template Fields -->
+          <div
+            class="template-fields"
+            data-template="wifi"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_wifi_ssid">{{ form.wifi_ssid.label }}</label>
+              {{ form.wifi_ssid }}
+            </div>
+            <div class="form-group">
+              <label for="id_wifi_password"
+                >{{ form.wifi_password.label }}</label
+              >
+              {{ form.wifi_password }}
+            </div>
+            <div class="form-group">
+              <label for="id_wifi_security"
+                >{{ form.wifi_security.label }}</label
+              >
+              {{ form.wifi_security }}
+            </div>
+          </div>
+
+          <!-- Email Template Fields -->
+          <div
+            class="template-fields"
+            data-template="email"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_email_to">{{ form.email_to.label }}</label>
+              {{ form.email_to }}
+            </div>
+            <div class="form-group">
+              <label for="id_email_subject"
+                >{{ form.email_subject.label }}</label
+              >
+              {{ form.email_subject }}
+            </div>
+            <div class="form-group">
+              <label for="id_email_body">{{ form.email_body.label }}</label>
+              {{ form.email_body }}
+            </div>
+          </div>
+
+          <!-- SMS Template Fields -->
+          <div
+            class="template-fields"
+            data-template="sms"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_sms_phone">{{ form.sms_phone.label }}</label>
+              {{ form.sms_phone }}
+            </div>
+            <div class="form-group">
+              <label for="id_sms_message">{{ form.sms_message.label }}</label>
+              {{ form.sms_message }}
+            </div>
+          </div>
+
+          <!-- Event/Calendar Template Fields -->
+          <div
+            class="template-fields"
+            data-template="event"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_event_title">{{ form.event_title.label }}</label>
+              {{ form.event_title }}
+            </div>
+            <div class="form-group">
+              <label for="id_event_start">{{ form.event_start.label }}</label>
+              {{ form.event_start }}
+            </div>
+            <div class="form-group">
+              <label for="id_event_end">{{ form.event_end.label }}</label>
+              {{ form.event_end }}
+            </div>
+            <div class="form-group">
+              <label for="id_event_location"
+                >{{ form.event_location.label }}</label
+              >
+              {{ form.event_location }}
+            </div>
+            <div class="form-group">
+              <label for="id_event_description"
+                >{{ form.event_description.label }}</label
+              >
+              {{ form.event_description }}
+            </div>
+          </div>
+
+          <!-- Geolocation Template Fields -->
+          <div
+            class="template-fields"
+            data-template="geo"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_geo_latitude">{{ form.geo_latitude.label }}</label>
+              {{ form.geo_latitude }}
+            </div>
+            <div class="form-group">
+              <label for="id_geo_longitude"
+                >{{ form.geo_longitude.label }}</label
+              >
+              {{ form.geo_longitude }}
+            </div>
+          </div>
+
+          <!-- Payment Template Fields -->
+          <div
+            class="template-fields"
+            data-template="payment"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label for="id_payment_type">{{ form.payment_type.label }}</label>
+              {{ form.payment_type }}
+            </div>
+            <div class="form-group">
+              <label for="id_payment_recipient"
+                >{{ form.payment_recipient.label }}</label
+              >
+              {{ form.payment_recipient }}
+            </div>
+            <div class="form-group">
+              <label for="id_payment_amount"
+                >{{ form.payment_amount.label }}</label
+              >
+              {{ form.payment_amount }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Couleurs du QR Code</label>
+            <div class="color-picker-group">
+              <div class="color-picker">
+                <label for="id_fill_color">Couleur du QR</label>
+                <div class="color-input-wrapper">
+                  {{ form.fill_color }}
+                  <div class="color-preview" id="fill-color-preview">
+                    #000000
+                  </div>
                 </div>
-
-                <!-- Text/URL Template Fields -->
-                <div class="template-fields" data-template="text">
-                    <div class="form-group">
-                        <label for="id_text">{{ form.text.label }}</label>
-                        {{ form.text }}
-                        {% if form.text.errors %}
-                            <div class="error">{{ form.text.errors }}</div>
-                        {% endif %}
-                    </div>
+              </div>
+              <div class="color-picker">
+                <label for="id_bg_color">Couleur de fond</label>
+                <div class="color-input-wrapper">
+                  {{ form.bg_color }}
+                  <div class="color-preview" id="bg-color-preview">#FFFFFF</div>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                <!-- vCard Template Fields -->
-                <div class="template-fields" data-template="vcard" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_vcard_name">{{ form.vcard_name.label }}</label>
-                        {{ form.vcard_name }}
+          <!-- Personnalisation Design Avancée -->
+          <div class="form-group">
+            <label>Personnalisation Avancée</label>
+
+            <!-- Gradient Toggle -->
+            <div class="toggle-wrapper">
+              <span class="toggle-label">{{ form.use_gradient.label }}</span>
+              <label class="toggle-switch">
+                {{ form.use_gradient }}
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Gradient Options -->
+            <div
+              class="gradient-section"
+              id="gradient-options"
+              style="display: none"
+            >
+              <div class="color-picker-group">
+                <div class="color-picker">
+                  <label for="id_gradient_color_start"
+                    >{{ form.gradient_color_start.label }}</label
+                  >
+                  <div class="color-input-wrapper">
+                    {{ form.gradient_color_start }}
+                    <div class="color-preview" id="gradient-start-preview">
+                      #667EEA
                     </div>
-                    <div class="form-group">
-                        <label for="id_vcard_org">{{ form.vcard_org.label }}</label>
-                        {{ form.vcard_org }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_vcard_phone">{{ form.vcard_phone.label }}</label>
-                        {{ form.vcard_phone }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_vcard_email">{{ form.vcard_email.label }}</label>
-                        {{ form.vcard_email }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_vcard_url">{{ form.vcard_url.label }}</label>
-                        {{ form.vcard_url }}
-                    </div>
+                  </div>
                 </div>
-
-                <!-- WiFi Template Fields -->
-                <div class="template-fields" data-template="wifi" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_wifi_ssid">{{ form.wifi_ssid.label }}</label>
-                        {{ form.wifi_ssid }}
+                <div class="color-picker">
+                  <label for="id_gradient_color_end"
+                    >{{ form.gradient_color_end.label }}</label
+                  >
+                  <div class="color-input-wrapper">
+                    {{ form.gradient_color_end }}
+                    <div class="color-preview" id="gradient-end-preview">
+                      #764BA2
                     </div>
-                    <div class="form-group">
-                        <label for="id_wifi_password">{{ form.wifi_password.label }}</label>
-                        {{ form.wifi_password }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_wifi_security">{{ form.wifi_security.label }}</label>
-                        {{ form.wifi_security }}
-                    </div>
+                  </div>
                 </div>
+              </div>
+              <div style="margin-top: 15px">
+                <label for="id_gradient_direction"
+                  >{{ form.gradient_direction.label }}</label
+                >
+                {{ form.gradient_direction }}
+              </div>
+            </div>
 
-                <!-- Email Template Fields -->
-                <div class="template-fields" data-template="email" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_email_to">{{ form.email_to.label }}</label>
-                        {{ form.email_to }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_email_subject">{{ form.email_subject.label }}</label>
-                        {{ form.email_subject }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_email_body">{{ form.email_body.label }}</label>
-                        {{ form.email_body }}
-                    </div>
-                </div>
+            <!-- Module Style -->
+            <div style="margin-top: 20px">
+              <label for="id_module_style">{{ form.module_style.label }}</label>
+              {{ form.module_style }}
+              <small class="help-text"
+                >Forme des modules individuels du QR code</small
+              >
+            </div>
 
-                <!-- SMS Template Fields -->
-                <div class="template-fields" data-template="sms" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_sms_phone">{{ form.sms_phone.label }}</label>
-                        {{ form.sms_phone }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_sms_message">{{ form.sms_message.label }}</label>
-                        {{ form.sms_message }}
-                    </div>
-                </div>
+            <!-- Global Shape -->
+            <div style="margin-top: 15px">
+              <label for="id_global_shape">{{ form.global_shape.label }}</label>
+              {{ form.global_shape }}
+              <small class="help-text">Forme générale du QR code</small>
+            </div>
+          </div>
 
-                <!-- Event/Calendar Template Fields -->
-                <div class="template-fields" data-template="event" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_event_title">{{ form.event_title.label }}</label>
-                        {{ form.event_title }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_event_start">{{ form.event_start.label }}</label>
-                        {{ form.event_start }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_event_end">{{ form.event_end.label }}</label>
-                        {{ form.event_end }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_event_location">{{ form.event_location.label }}</label>
-                        {{ form.event_location }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_event_description">{{ form.event_description.label }}</label>
-                        {{ form.event_description }}
-                    </div>
-                </div>
-
-                <!-- Geolocation Template Fields -->
-                <div class="template-fields" data-template="geo" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_geo_latitude">{{ form.geo_latitude.label }}</label>
-                        {{ form.geo_latitude }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_geo_longitude">{{ form.geo_longitude.label }}</label>
-                        {{ form.geo_longitude }}
-                    </div>
-                </div>
-
-                <!-- Payment Template Fields -->
-                <div class="template-fields" data-template="payment" style="display:none;">
-                    <div class="form-group">
-                        <label for="id_payment_type">{{ form.payment_type.label }}</label>
-                        {{ form.payment_type }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_payment_recipient">{{ form.payment_recipient.label }}</label>
-                        {{ form.payment_recipient }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_payment_amount">{{ form.payment_amount.label }}</label>
-                        {{ form.payment_amount }}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Couleurs du QR Code</label>
-                    <div class="color-picker-group">
-                        <div class="color-picker">
-                            <label for="id_fill_color">Couleur du QR</label>
-                            <div class="color-input-wrapper">
-                                {{ form.fill_color }}
-                                <div class="color-preview" id="fill-color-preview">#000000</div>
-                            </div>
-                        </div>
-                        <div class="color-picker">
-                            <label for="id_bg_color">Couleur de fond</label>
-                            <div class="color-input-wrapper">
-                                {{ form.bg_color }}
-                                <div class="color-preview" id="bg-color-preview">#FFFFFF</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Personnalisation Design Avancée -->
-                <div class="form-group">
-                    <label>Personnalisation Avancée</label>
-
-                    <!-- Gradient Toggle -->
-                    <div class="toggle-wrapper">
-                        <span class="toggle-label">{{ form.use_gradient.label }}</span>
-                        <label class="toggle-switch">
-                            {{ form.use_gradient }}
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- Gradient Options -->
-                    <div class="gradient-section" id="gradient-options" style="display:none;">
-                        <div class="color-picker-group">
-                            <div class="color-picker">
-                                <label for="id_gradient_color_start">{{ form.gradient_color_start.label }}</label>
-                                <div class="color-input-wrapper">
-                                    {{ form.gradient_color_start }}
-                                    <div class="color-preview" id="gradient-start-preview">#667EEA</div>
-                                </div>
-                            </div>
-                            <div class="color-picker">
-                                <label for="id_gradient_color_end">{{ form.gradient_color_end.label }}</label>
-                                <div class="color-input-wrapper">
-                                    {{ form.gradient_color_end }}
-                                    <div class="color-preview" id="gradient-end-preview">#764BA2</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 15px;">
-                            <label for="id_gradient_direction">{{ form.gradient_direction.label }}</label>
-                            {{ form.gradient_direction }}
-                        </div>
-                    </div>
-
-                    <!-- Module Style -->
-                    <div style="margin-top: 20px;">
-                        <label for="id_module_style">{{ form.module_style.label }}</label>
-                        {{ form.module_style }}
-                        <small class="help-text">Forme des modules individuels du QR code</small>
-                    </div>
-
-                    <!-- Global Shape -->
-                    <div style="margin-top: 15px;">
-                        <label for="id_global_shape">{{ form.global_shape.label }}</label>
-                        {{ form.global_shape }}
-                        <small class="help-text">Forme générale du QR code</small>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_border_size">{{ form.border_size.label }}</label>
-                    {{ form.border_size }}
-                    {% if form.border_size.errors %}
-                        <div class="error">{{ form.border_size.errors }}</div>
-                    {% endif %}
-                    <small class="help-text">Valeur entre 0 et 20 (0 = pas de bordure)</small>
-                </div>
-
-                <div class="form-group">
-                    <div class="toggle-wrapper">
-                        <span class="toggle-label">{{ form.enable_frame.label }}</span>
-                        <label class="toggle-switch">
-                            {{ form.enable_frame }}
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="frame-section" id="frame-options">
-                        <div class="frame-options">
-                            <div>
-                                <label for="id_frame_width">{{ form.frame_width.label }}</label>
-                                {{ form.frame_width }}
-                                <small class="help-text">Valeur entre 10 et 100 pixels</small>
-                            </div>
-
-                            <div>
-                                <label for="id_frame_color">{{ form.frame_color.label }}</label>
-                                <div class="frame-color-wrapper">
-                                    {{ form.frame_color }}
-                                    <div class="frame-color-preview" id="frame-color-preview">#FFFFFF</div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label for="id_frame_text">{{ form.frame_text.label }}</label>
-                                {{ form.frame_text }}
-                                <small class="help-text">Texte affiché sur le cadre (optionnel)</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_logo">{{ form.logo.label }}</label>
-                    <div class="file-upload-wrapper">
-                        <label for="id_logo" class="file-upload-label">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            Ajouter une image/logo
-                        </label>
-                        {{ form.logo }}
-                    </div>
-                    <div class="file-name" id="file-name">Aucun fichier choisi</div>
-                </div>
-
-                <button type="submit" class="generate-btn">Générer le QR Code</button>
-            </form>
-        </div>
-
-        <div class="result-section">
-            {% if qr_image_data %}
-                <div class="qr-result">
-                    <h3>Votre QR Code</h3>
-                    <div class="qr-display">
-                        <img src="{{ qr_image_data }}" alt="QR Code généré" id="qr-img">
-                    </div>
-                    <div class="download-buttons">
-                        <a href="#" id="download-png-btn" class="download-btn download-btn-png">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            PNG
-                        </a>
-                        <a href="#" id="download-svg-btn" class="download-btn download-btn-svg">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            SVG
-                        </a>
-                    </div>
-                </div>
-            {% else %}
-                <div class="placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    <p>Votre QR Code apparaîtra ici</p>
-                </div>
+          <div class="form-group">
+            <label for="id_border_size">{{ form.border_size.label }}</label>
+            {{ form.border_size }} {% if form.border_size.errors %}
+            <div class="error">{{ form.border_size.errors }}</div>
             {% endif %}
+            <small class="help-text"
+              >Valeur entre 0 et 20 (0 = pas de bordure)</small
+            >
+          </div>
+
+          <div class="form-group">
+            <div class="toggle-wrapper">
+              <span class="toggle-label">{{ form.enable_frame.label }}</span>
+              <label class="toggle-switch">
+                {{ form.enable_frame }}
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="frame-section" id="frame-options">
+              <div class="frame-options">
+                <div>
+                  <label for="id_frame_width"
+                    >{{ form.frame_width.label }}</label
+                  >
+                  {{ form.frame_width }}
+                  <small class="help-text">Valeur entre 10 et 100 pixels</small>
+                </div>
+
+                <div>
+                  <label for="id_frame_color"
+                    >{{ form.frame_color.label }}</label
+                  >
+                  <div class="frame-color-wrapper">
+                    {{ form.frame_color }}
+                    <div class="frame-color-preview" id="frame-color-preview">
+                      #FFFFFF
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="id_frame_text">{{ form.frame_text.label }}</label>
+                  {{ form.frame_text }}
+                  <small class="help-text"
+                    >Texte affiché sur le cadre (optionnel)</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_logo">{{ form.logo.label }}</label>
+            <div class="file-upload-wrapper">
+              <label for="id_logo" class="file-upload-label">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Ajouter une image/logo
+              </label>
+              {{ form.logo }}
+            </div>
+            <div class="file-name" id="file-name">Aucun fichier choisi</div>
+          </div>
+
+          <button type="submit" class="generate-btn">Générer le QR Code</button>
+        </form>
+
+        <!-- Section Génération en Batch -->
+        <div class="batch-section">
+          <h3 class="batch-title">Génération en Batch</h3>
+          <p class="batch-subtitle">
+            Générez plusieurs QR codes à partir d'un fichier CSV
+          </p>
+
+          <div class="batch-upload-zone" id="batch-upload-zone">
+            <input
+              type="file"
+              id="batch-csv-file"
+              accept=".csv"
+              style="display: none"
+            />
+            <label for="batch-csv-file" class="batch-upload-label">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+              <div class="batch-upload-text">
+                <strong>Cliquez pour sélectionner</strong> ou glissez-déposez un
+                fichier CSV
+              </div>
+              <small>Format: text,filename (une ligne par QR code)</small>
+            </label>
+            <div
+              class="batch-file-info"
+              id="batch-file-info"
+              style="display: none"
+            >
+              <span class="batch-filename" id="batch-filename"></span>
+              <button type="button" class="batch-remove" id="batch-remove">
+                ×
+              </button>
+            </div>
+          </div>
+
+          <div class="batch-example">
+            <strong>Exemple de CSV :</strong>
+            <pre>
+text,filename
+https://exemple.com,exemple
+WIFI:T:WPA;S:MonWiFi;P:password123;;,wifi_maison
+Hello World,hello</pre
+            >
+          </div>
+
+          <button
+            type="button"
+            class="batch-generate-btn"
+            id="batch-generate-btn"
+            disabled
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Générer le ZIP
+          </button>
+
+          <div class="batch-progress" id="batch-progress" style="display: none">
+            <div class="batch-progress-text">Génération en cours...</div>
+            <div class="batch-progress-bar">
+              <div class="batch-progress-fill"></div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="result-section">
+        {% if qr_image_data %}
+        <div class="qr-result">
+          <h3>Votre QR Code</h3>
+          <div class="qr-display">
+            <img src="{{ qr_image_data }}" alt="QR Code généré" id="qr-img" />
+          </div>
+          <div class="download-buttons">
+            <a
+              href="#"
+              id="download-png-btn"
+              class="download-btn download-btn-png"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              PNG
+            </a>
+            <a
+              href="#"
+              id="download-svg-btn"
+              class="download-btn download-btn-svg"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              SVG
+            </a>
+          </div>
+        </div>
+        {% else %}
+        <div class="placeholder">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <p>Votre QR Code apparaîtra ici</p>
+        </div>
+        {% endif %}
+      </div>
     </div>
 
     <!-- Modal historique -->
     <div class="history-modal" id="history-modal">
-        <div class="history-modal-content">
-            <div class="history-modal-header">
-                <h2>Historique des QR Codes</h2>
-                <button class="history-close" id="history-close">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-            <div class="history-grid" id="history-grid">
-                <!-- Les items d'historique seront ajoutés ici par JavaScript -->
-            </div>
-            <div class="history-empty" id="history-empty" style="display: none;">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <p>Aucun QR code dans l'historique</p>
-            </div>
-            <div class="history-footer">
-                <button class="history-clear" id="history-clear">Vider l'historique</button>
-            </div>
+      <div class="history-modal-content">
+        <div class="history-modal-header">
+          <h2>Historique des QR Codes</h2>
+          <button class="history-close" id="history-close">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
+        <div class="history-grid" id="history-grid">
+          <!-- Les items d'historique seront ajoutés ici par JavaScript -->
+        </div>
+        <div class="history-empty" id="history-empty" style="display: none">
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <p>Aucun QR code dans l'historique</p>
+        </div>
+        <div class="history-footer">
+          <button class="history-clear" id="history-clear">
+            Vider l'historique
+          </button>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="{% static 'js/script.js' %}"></script>
-</body>
+  </body>
 </html>
