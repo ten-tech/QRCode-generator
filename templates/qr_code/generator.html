@@ -9,8 +9,17 @@
 </head>
 <body>
     <div class="container">
-        <!-- Toggle thème sombre -->
-        <div class="theme-toggle-wrapper">
+        <!-- Contrôles en haut à droite -->
+        <div class="header-controls">
+            <!-- Bouton historique -->
+            <button class="history-btn" id="history-btn" title="Historique">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </button>
+
+            <!-- Toggle thème sombre -->
             <div class="theme-toggle-btn" id="theme-toggle">
                 <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
@@ -250,6 +259,35 @@
                     <p>Votre QR Code apparaîtra ici</p>
                 </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal historique -->
+    <div class="history-modal" id="history-modal">
+        <div class="history-modal-content">
+            <div class="history-modal-header">
+                <h2>Historique des QR Codes</h2>
+                <button class="history-close" id="history-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="history-grid" id="history-grid">
+                <!-- Les items d'historique seront ajoutés ici par JavaScript -->
+            </div>
+            <div class="history-empty" id="history-empty" style="display: none;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <p>Aucun QR code dans l'historique</p>
+            </div>
+            <div class="history-footer">
+                <button class="history-clear" id="history-clear">Vider l'historique</button>
+            </div>
         </div>
     </div>
 
