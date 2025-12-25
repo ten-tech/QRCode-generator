@@ -1,17 +1,44 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Template switching
+    // ========== GESTION DU THÈME SOMBRE ==========
+    const themeToggle = document.getElementById('theme-toggle');
+    const htmlElement = document.documentElement;
+
+    // Détecte la préférence système
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // Charge le thème sauvegardé ou utilise la préférence système
+    const savedTheme = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
+    htmlElement.setAttribute('data-theme', savedTheme);
+
+    // Met à jour l'état du toggle
+    if (savedTheme === 'dark') {
+        themeToggle.classList.add('active');
+    }
+
+    // Toggle au clic
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = htmlElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        htmlElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+
+        themeToggle.classList.toggle('active');
+    });
+
+    // ========== SWITCH DE TEMPLATES ==========
     const templateRadios = document.querySelectorAll('.template-radio');
     const templateFieldsSections = document.querySelectorAll('.template-fields');
 
     function switchTemplate() {
         const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
 
-        // Hide all template fields
+        // Masque tous les champs de templates
         templateFieldsSections.forEach(section => {
             section.style.display = 'none';
         });
 
-        // Show selected template fields
+        // Affiche les champs du template sélectionné
         const selectedSection = document.querySelector(`.template-fields[data-template="${selectedTemplate}"]`);
         if (selectedSection) {
             selectedSection.style.display = 'block';
@@ -21,15 +48,15 @@ document.addEventListener('DOMContentLoaded', function() {
     templateRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             switchTemplate();
-            // Trigger preview update when template changes
+            // Déclenche la mise à jour de l'aperçu quand le template change
             debouncedPreview();
         });
     });
 
-    // Initialize template display
+    // Initialise l'affichage du template
     switchTemplate();
 
-    // Color picker synchronization
+    // Synchronisation des sélecteurs de couleur
     const fillColorInput = document.getElementById('id_fill_color');
     const bgColorInput = document.getElementById('id_bg_color');
 
@@ -40,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fillPreview.style.background = this.value;
             fillPreview.style.color = getContrastColor(this.value);
         });
-        // Initialize preview
+        // Initialise l'aperçu
         fillPreview.textContent = fillColorInput.value.toUpperCase();
         fillPreview.style.background = fillColorInput.value;
         fillPreview.style.color = getContrastColor(fillColorInput.value);
@@ -53,13 +80,13 @@ document.addEventListener('DOMContentLoaded', function() {
             bgPreview.style.background = this.value;
             bgPreview.style.color = getContrastColor(this.value);
         });
-        // Initialize preview
+        // Initialise l'aperçu
         bgPreview.textContent = bgColorInput.value.toUpperCase();
         bgPreview.style.background = bgColorInput.value;
         bgPreview.style.color = getContrastColor(bgColorInput.value);
     }
 
-    // Border size input validation
+    // Validation de la taille de bordure
     const borderInput = document.getElementById('id_border_size');
     if (borderInput) {
         borderInput.addEventListener('input', function() {
@@ -69,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Frame toggle functionality
+    // Fonctionnalité de toggle du cadre
     const frameToggle = document.getElementById('id_enable_frame');
     const frameOptions = document.getElementById('frame-options');
 
@@ -84,13 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (frameToggle) {
-        // Initialize on load
+        // Initialise au chargement
         toggleFrameOptions();
 
         frameToggle.addEventListener('change', toggleFrameOptions);
     }
 
-    // Frame width validation
+    // Validation de la largeur du cadre
     const frameWidthInput = document.getElementById('id_frame_width');
     if (frameWidthInput) {
         frameWidthInput.addEventListener('input', function() {
@@ -100,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Frame color picker preview
+    // Aperçu du sélecteur de couleur du cadre
     const frameColorInput = document.getElementById('id_frame_color');
     if (frameColorInput) {
         const frameColorPreview = document.getElementById('frame-color-preview');
@@ -109,13 +136,13 @@ document.addEventListener('DOMContentLoaded', function() {
             frameColorPreview.style.background = this.value;
             frameColorPreview.style.color = getContrastColor(this.value);
         });
-        // Initialize preview
+        // Initialise l'aperçu
         frameColorPreview.textContent = frameColorInput.value.toUpperCase();
         frameColorPreview.style.background = frameColorInput.value;
         frameColorPreview.style.color = getContrastColor(frameColorInput.value);
     }
 
-    // File upload display
+    // Affichage du fichier uploadé
     const fileInput = document.getElementById('id_logo');
     const fileName = document.getElementById('file-name');
 
@@ -133,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Download PNG functionality
+    // Fonctionnalité de téléchargement PNG
     const downloadPngBtn = document.getElementById('download-png-btn');
     if (downloadPngBtn) {
         downloadPngBtn.addEventListener('click', function(e) {
@@ -147,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 link.click();
                 document.body.removeChild(link);
 
-                // Visual feedback
+                // Feedback visuel
                 const originalHTML = this.innerHTML;
                 this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>OK';
                 setTimeout(() => {
@@ -157,17 +184,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Download SVG functionality
+    // Fonctionnalité de téléchargement SVG
     const downloadSvgBtn = document.getElementById('download-svg-btn');
     if (downloadSvgBtn) {
         downloadSvgBtn.addEventListener('click', function(e) {
             e.preventDefault();
 
-            // Get selected template and collect data
+            // Récupère le template sélectionné et collecte les données
             const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
             let qrText = '';
 
-            // Collect data based on template
+            // Collecte les données selon le template
             if (selectedTemplate === 'text') {
                 qrText = textInput?.value.trim() || '';
             } else if (selectedTemplate === 'vcard') {
@@ -195,16 +222,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!qrText) return;
 
-            // Generate SVG QR code
+            // Génère le QR code SVG
             const qr = qrcode(0, 'H');
             qr.addData(qrText);
             qr.make();
 
-            // Get colors
+            // Récupère les couleurs
             const fillColor = fillColorInput?.value || '#000000';
             const bgColor = bgColorInput?.value || '#FFFFFF';
 
-            // Create SVG with custom colors
+            // Crée le SVG avec les couleurs personnalisées
             const cellSize = 10;
             const moduleCount = qr.getModuleCount();
             const borderSize = parseInt(borderInput?.value || '4');
@@ -224,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             svgContent += '</svg>';
 
-            // Download SVG
+            // Télécharge le SVG
             const blob = new Blob([svgContent], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -235,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
 
-            // Visual feedback
+            // Feedback visuel
             const originalHTML = this.innerHTML;
             this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>OK';
             setTimeout(() => {
@@ -244,13 +271,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Real-time preview with debounce
+    // Aperçu en temps réel avec debounce
     const textInput = document.getElementById('id_text');
     const qrImage = document.getElementById('qr-img');
     const qrDisplay = document.querySelector('.qr-display');
     let previewTimeout = null;
 
-    // Create loading spinner
+    // Crée le spinner de chargement
     const loadingSpinner = document.createElement('div');
     loadingSpinner.className = 'loading-spinner';
     loadingSpinner.innerHTML = '<div class="spinner-ring"></div>';
@@ -260,13 +287,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generatePreview() {
-        // Get selected template type
+        // Récupère le type de template sélectionné
         const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
 
-        // Show spinner
+        // Affiche le spinner
         if (loadingSpinner) loadingSpinner.style.display = 'flex';
 
-        // Collect common data
+        // Collecte les données communes
         const formData = {
             template_type: selectedTemplate,
             fill_color: fillColorInput?.value || '#000000',
@@ -278,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
             frame_text: document.getElementById('id_frame_text')?.value || ''
         };
 
-        // Collect template-specific data
+        // Collecte les données spécifiques au template
         if (selectedTemplate === 'text') {
             formData.text = textInput?.value.trim() || '';
             if (!formData.text) {
@@ -320,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Call API
+        // Appelle l'API
         fetch('/api/preview', {
             method: 'POST',
             headers: {
@@ -351,28 +378,28 @@ document.addEventListener('DOMContentLoaded', function() {
         previewTimeout = setTimeout(generatePreview, 500);
     }
 
-    // Add event listeners for real-time preview
+    // Ajoute les event listeners pour l'aperçu en temps réel
     const previewInputs = [
-        // Text template
+        // Template texte
         textInput,
-        // vCard template
+        // Template vCard
         document.getElementById('id_vcard_name'),
         document.getElementById('id_vcard_org'),
         document.getElementById('id_vcard_phone'),
         document.getElementById('id_vcard_email'),
         document.getElementById('id_vcard_url'),
-        // WiFi template
+        // Template WiFi
         document.getElementById('id_wifi_ssid'),
         document.getElementById('id_wifi_password'),
         document.getElementById('id_wifi_security'),
-        // Email template
+        // Template Email
         document.getElementById('id_email_to'),
         document.getElementById('id_email_subject'),
         document.getElementById('id_email_body'),
-        // SMS template
+        // Template SMS
         document.getElementById('id_sms_phone'),
         document.getElementById('id_sms_message'),
-        // Common fields
+        // Champs communs
         fillColorInput,
         bgColorInput,
         borderInput,
@@ -390,23 +417,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Function to get contrasting text color
+// Fonction pour obtenir une couleur de texte contrastée
 function getContrastColor(hexcolor) {
-    // Remove # if present
+    // Retire le # si présent
     hexcolor = hexcolor.replace('#', '');
 
-    // Convert to RGB
+    // Convertit en RGB
     const r = parseInt(hexcolor.substr(0, 2), 16);
     const g = parseInt(hexcolor.substr(2, 2), 16);
     const b = parseInt(hexcolor.substr(4, 2), 16);
 
-    // Calculate luminance
+    // Calcule la luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
     return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
-// Function to generate vCard text
+// Fonction pour générer le texte vCard
 function generateVCardText(name, org, phone, email, url) {
     let vcard = "BEGIN:VCARD\n";
     vcard += "VERSION:3.0\n";

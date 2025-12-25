@@ -6,7 +6,7 @@
 }
 
 :root {
-    /* Neumorphism colors */
+    /* Couleurs neumorphisme mode clair */
     --bg-main: #e0e5ec;
     --shadow-light: #ffffff;
     --shadow-dark: #a3b1c6;
@@ -17,6 +17,18 @@
     --success: #2ecc71;
     --border-radius: 20px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Thème sombre */
+:root[data-theme="dark"] {
+    --bg-main: #1a1a2e;
+    --shadow-light: #252947;
+    --shadow-dark: #0f1419;
+    --text-primary: #e0e5ec;
+    --text-secondary: #9ca3af;
+    --accent: #818cf8;
+    --accent-hover: #6366f1;
+    --success: #34d399;
 }
 
 body {
@@ -32,6 +44,7 @@ body {
 
 /* ========== CONTAINER ========== */
 .container {
+    position: relative;
     background: var(--bg-main);
     border-radius: 30px;
     box-shadow:
@@ -269,6 +282,7 @@ input[type="file"].neumorphic-file {
 .toggle-wrapper .toggle-label {
     margin-bottom: 0;
     cursor: default;
+    color: var(--text-primary);
 }
 
 .toggle-switch {
@@ -868,6 +882,76 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
     }
 }
 
+/* ========== THEME TOGGLE ========== */
+.theme-toggle-wrapper {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    z-index: 100;
+}
+
+.theme-toggle-btn {
+    width: 60px;
+    height: 30px;
+    background: var(--bg-main);
+    border-radius: 30px;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow:
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+}
+
+.theme-toggle-btn::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: var(--bg-main);
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: var(--transition);
+    box-shadow:
+        4px 4px 8px var(--shadow-dark),
+        -4px -4px 8px var(--shadow-light);
+}
+
+.theme-toggle-btn.active::before {
+    left: 33px;
+}
+
+.theme-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    transition: var(--transition);
+}
+
+.sun-icon {
+    left: 8px;
+    opacity: 1;
+    color: #f39c12;
+}
+
+.moon-icon {
+    right: 8px;
+    opacity: 0.3;
+    color: var(--text-secondary);
+}
+
+.theme-toggle-btn.active .sun-icon {
+    opacity: 0.3;
+}
+
+.theme-toggle-btn.active .moon-icon {
+    opacity: 1;
+    color: #818cf8;
+}
+
 /* Mobile responsive template selector */
 @media (max-width: 768px) {
     .template-selector {
@@ -887,5 +971,11 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
 @media (max-width: 480px) {
     .template-option {
         min-width: 100%;
+    }
+
+    /* Thème toggle responsive */
+    .theme-toggle-wrapper {
+        top: 20px;
+        right: 20px;
     }
 }
