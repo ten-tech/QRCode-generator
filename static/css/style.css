@@ -451,21 +451,39 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
     }
 }
 
+/* Download Buttons Container */
+.download-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
 .download-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 15px 35px;
+    gap: 8px;
+    padding: 15px 30px;
     background: var(--bg-main);
-    color: var(--success);
     text-decoration: none;
     border-radius: var(--border-radius);
     font-weight: 700;
+    font-size: 14px;
     transition: var(--transition);
     box-shadow:
         8px 8px 16px var(--shadow-dark),
         -8px -8px 16px var(--shadow-light);
+    flex: 1;
+    max-width: 150px;
+}
+
+.download-btn-png {
+    color: var(--success);
+}
+
+.download-btn-svg {
+    color: var(--accent);
 }
 
 .download-btn:hover {
@@ -473,7 +491,14 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
         10px 10px 20px var(--shadow-dark),
         -10px -10px 20px var(--shadow-light);
     transform: translateY(-2px);
+}
+
+.download-btn-png:hover {
     color: #27ae60;
+}
+
+.download-btn-svg:hover {
+    color: var(--accent-hover);
 }
 
 .download-btn:active {
@@ -606,8 +631,18 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
         font-size: 13px;
     }
 
-    .generate-btn,
+    .generate-btn {
+        padding: 14px 25px;
+        font-size: 14px;
+    }
+
+    .download-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
     .download-btn {
+        max-width: 100%;
         padding: 14px 25px;
         font-size: 14px;
     }

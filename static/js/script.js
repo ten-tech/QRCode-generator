@@ -133,10 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Download functionality
-    const downloadBtn = document.getElementById('download-btn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', function(e) {
+    // Download PNG functionality
+    const downloadPngBtn = document.getElementById('download-png-btn');
+    if (downloadPngBtn) {
+        downloadPngBtn.addEventListener('click', function(e) {
             e.preventDefault();
             const qrImage = document.getElementById('qr-img');
             if (qrImage) {
@@ -148,11 +148,99 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.removeChild(link);
 
                 // Visual feedback
-                this.textContent = 'Téléchargé !';
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>OK';
                 setTimeout(() => {
-                    this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Télécharger';
+                    this.innerHTML = originalHTML;
                 }, 2000);
             }
+        });
+    }
+
+    // Download SVG functionality
+    const downloadSvgBtn = document.getElementById('download-svg-btn');
+    if (downloadSvgBtn) {
+        downloadSvgBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Get selected template and collect data
+            const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
+            let qrText = '';
+
+            // Collect data based on template
+            if (selectedTemplate === 'text') {
+                qrText = textInput?.value.trim() || '';
+            } else if (selectedTemplate === 'vcard') {
+                const name = document.getElementById('id_vcard_name')?.value || '';
+                const org = document.getElementById('id_vcard_org')?.value || '';
+                const phone = document.getElementById('id_vcard_phone')?.value || '';
+                const email = document.getElementById('id_vcard_email')?.value || '';
+                const url = document.getElementById('id_vcard_url')?.value || '';
+                qrText = generateVCardText(name, org, phone, email, url);
+            } else if (selectedTemplate === 'wifi') {
+                const ssid = document.getElementById('id_wifi_ssid')?.value || '';
+                const password = document.getElementById('id_wifi_password')?.value || '';
+                const security = document.getElementById('id_wifi_security')?.value || 'WPA';
+                qrText = `WIFI:T:${security};S:${ssid};P:${password};;`;
+            } else if (selectedTemplate === 'email') {
+                const to = document.getElementById('id_email_to')?.value || '';
+                const subject = document.getElementById('id_email_subject')?.value || '';
+                const body = document.getElementById('id_email_body')?.value || '';
+                qrText = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            } else if (selectedTemplate === 'sms') {
+                const phone = document.getElementById('id_sms_phone')?.value || '';
+                const message = document.getElementById('id_sms_message')?.value || '';
+                qrText = `sms:${phone}?body=${encodeURIComponent(message)}`;
+            }
+
+            if (!qrText) return;
+
+            // Generate SVG QR code
+            const qr = qrcode(0, 'H');
+            qr.addData(qrText);
+            qr.make();
+
+            // Get colors
+            const fillColor = fillColorInput?.value || '#000000';
+            const bgColor = bgColorInput?.value || '#FFFFFF';
+
+            // Create SVG with custom colors
+            const cellSize = 10;
+            const moduleCount = qr.getModuleCount();
+            const borderSize = parseInt(borderInput?.value || '4');
+            const svgSize = (moduleCount + borderSize * 2) * cellSize;
+
+            let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}">`;
+            svgContent += `<rect width="100%" height="100%" fill="${bgColor}"/>`;
+
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    if (qr.isDark(row, col)) {
+                        const x = (col + borderSize) * cellSize;
+                        const y = (row + borderSize) * cellSize;
+                        svgContent += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${fillColor}"/>`;
+                    }
+                }
+            }
+            svgContent += '</svg>';
+
+            // Download SVG
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'qrcode_' + Date.now() + '.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Visual feedback
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>OK';
+            setTimeout(() => {
+                this.innerHTML = originalHTML;
+            }, 2000);
         });
     }
 
@@ -316,4 +404,17 @@ function getContrastColor(hexcolor) {
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
     return luminance > 0.5 ? '#000000' : '#ffffff';
+}
+
+// Function to generate vCard text
+function generateVCardText(name, org, phone, email, url) {
+    let vcard = "BEGIN:VCARD\n";
+    vcard += "VERSION:3.0\n";
+    if (name) vcard += `FN:${name}\n`;
+    if (org) vcard += `ORG:${org}\n`;
+    if (phone) vcard += `TEL:${phone}\n`;
+    if (email) vcard += `EMAIL:${email}\n`;
+    if (url) vcard += `URL:${url}\n`;
+    vcard += "END:VCARD";
+    return vcard;
 }
