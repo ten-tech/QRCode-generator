@@ -511,6 +511,10 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
     color: var(--accent);
 }
 
+.download-btn-pdf {
+    color: #e74c3c;
+}
+
 .download-btn:hover {
     box-shadow:
         10px 10px 20px var(--shadow-dark),
@@ -524,6 +528,10 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
 
 .download-btn-svg:hover {
     color: var(--accent-hover);
+}
+
+.download-btn-pdf:hover {
+    color: #c0392b;
 }
 
 .download-btn:active {
