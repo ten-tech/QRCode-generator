@@ -474,3 +474,71 @@ def qr_preview_api(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def batch_generate(request):
+    """
+    Génération en batch de QR codes depuis un fichier CSV
+    Format CSV: text,filename
+    Retourne un fichier ZIP contenant tous les QR codes
+    """
+    import csv
+    import zipfile
+    from io import StringIO, BytesIO as ZipBytesIO
+
+    try:
+        # Vérifie qu'un fichier a été uploadé
+        if 'csv_file' not in request.FILES:
+            return JsonResponse({'success': False, 'error': 'Aucun fichier CSV fourni'}, status=400)
+
+        csv_file = request.FILES['csv_file']
+
+        # Lit le contenu du CSV
+        csv_content = csv_file.read().decode('utf-8')
+        csv_reader = csv.DictReader(StringIO(csv_content))
+
+        # Vérifie que le CSV a les colonnes requises
+        if 'text' not in csv_reader.fieldnames:
+            return JsonResponse({'success': False, 'error': 'Le CSV doit contenir une colonne "text"'}, status=400)
+
+        # Crée un fichier ZIP en mémoire
+        zip_buffer = ZipBytesIO()
+
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            count = 0
+            for row in csv_reader:
+                text = row.get('text', '').strip()
+                if not text:
+                    continue
+
+                # Nom du fichier (utilise le champ filename si présent, sinon utilise un compteur)
+                filename = row.get('filename', f'qrcode_{count + 1}').strip()
+                if not filename.endswith('.png'):
+                    filename += '.png'
+
+                # Génère le QR code (utilise les paramètres par défaut)
+                qr_image_data = generate_qr_image(text=text)
+
+                # Extrait les données base64 et les convertit en bytes
+                if qr_image_data.startswith('data:image/png;base64,'):
+                    base64_data = qr_image_data.split(',')[1]
+                    image_bytes = base64.b64decode(base64_data)
+
+                    # Ajoute au ZIP
+                    zip_file.writestr(filename, image_bytes)
+                    count += 1
+
+        if count == 0:
+            return JsonResponse({'success': False, 'error': 'Aucun QR code généré. Vérifiez le contenu du CSV.'}, status=400)
+
+        # Prépare la réponse avec le fichier ZIP
+        zip_buffer.seek(0)
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="qrcodes_batch.zip"'
+
+        return response
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Erreur lors de la génération: {str(e)}'}, status=500)
