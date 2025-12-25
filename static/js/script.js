@@ -321,6 +321,107 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Fonctionnalité de téléchargement PDF
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
+    if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            // Récupère le template sélectionné et collecte les données
+            const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
+
+            // Collecte les données communes
+            const formData = {
+                template_type: selectedTemplate,
+                fill_color: fillColorInput?.value || '#000000',
+                bg_color: bgColorInput?.value || '#FFFFFF',
+                border_size: borderInput?.value || '4',
+                enable_frame: frameToggle?.checked ? 'true' : 'false',
+                frame_width: frameWidthInput?.value || '30',
+                frame_color: frameColorInput?.value || '#FFFFFF',
+                frame_text: document.getElementById('id_frame_text')?.value || '',
+                use_gradient: gradientToggle?.checked ? 'true' : 'false',
+                gradient_color_start: gradientStartInput?.value || '#667eea',
+                gradient_color_end: gradientEndInput?.value || '#764ba2',
+                gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
+                module_style: document.getElementById('id_module_style')?.value || 'square',
+                global_shape: document.getElementById('id_global_shape')?.value || 'square',
+                timestamp: Date.now()
+            };
+
+            // Collecte les données spécifiques au template
+            if (selectedTemplate === 'text') {
+                formData.text = textInput?.value.trim() || '';
+            } else if (selectedTemplate === 'vcard') {
+                formData.vcard_name = document.getElementById('id_vcard_name')?.value || '';
+                formData.vcard_org = document.getElementById('id_vcard_org')?.value || '';
+                formData.vcard_phone = document.getElementById('id_vcard_phone')?.value || '';
+                formData.vcard_email = document.getElementById('id_vcard_email')?.value || '';
+                formData.vcard_url = document.getElementById('id_vcard_url')?.value || '';
+            } else if (selectedTemplate === 'wifi') {
+                formData.wifi_ssid = document.getElementById('id_wifi_ssid')?.value || '';
+                formData.wifi_password = document.getElementById('id_wifi_password')?.value || '';
+                formData.wifi_security = document.getElementById('id_wifi_security')?.value || 'WPA';
+            } else if (selectedTemplate === 'email') {
+                formData.email_to = document.getElementById('id_email_to')?.value || '';
+                formData.email_subject = document.getElementById('id_email_subject')?.value || '';
+                formData.email_body = document.getElementById('id_email_body')?.value || '';
+            } else if (selectedTemplate === 'sms') {
+                formData.sms_phone = document.getElementById('id_sms_phone')?.value || '';
+                formData.sms_message = document.getElementById('id_sms_message')?.value || '';
+            } else if (selectedTemplate === 'event') {
+                formData.event_title = document.getElementById('id_event_title')?.value || '';
+                formData.event_start = document.getElementById('id_event_start')?.value || '';
+                formData.event_end = document.getElementById('id_event_end')?.value || '';
+                formData.event_location = document.getElementById('id_event_location')?.value || '';
+                formData.event_description = document.getElementById('id_event_description')?.value || '';
+            } else if (selectedTemplate === 'geo') {
+                formData.geo_latitude = document.getElementById('id_geo_latitude')?.value || '';
+                formData.geo_longitude = document.getElementById('id_geo_longitude')?.value || '';
+            } else if (selectedTemplate === 'payment') {
+                formData.payment_type = document.getElementById('id_payment_type')?.value || 'paypal';
+                formData.payment_recipient = document.getElementById('id_payment_recipient')?.value || '';
+                formData.payment_amount = document.getElementById('id_payment_amount')?.value || '';
+            }
+
+            try {
+                // Envoie la requête au backend
+                const response = await fetch('/api/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la génération du PDF');
+                }
+
+                // Télécharge le fichier PDF
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'qrcode_' + Date.now() + '.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                // Feedback visuel
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>OK';
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                }, 2000);
+
+            } catch (error) {
+                alert('Erreur lors du téléchargement du PDF: ' + error.message);
+            }
+        });
+    }
+
     // Aperçu en temps réel avec debounce
     const textInput = document.getElementById('id_text');
     const qrImage = document.getElementById('qr-img');
