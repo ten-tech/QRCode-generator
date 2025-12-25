@@ -1473,3 +1473,19 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
         margin-left: 100%;
     }
 }
+
+/* ========== STICKY POSITIONING DESKTOP ========== */
+@media (min-width: 1025px) {
+    .container {
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .result-section {
+        position: sticky;
+        top: 20px;
+        align-self: flex-start;
+        max-height: calc(90vh - 40px);
+    }
+}
