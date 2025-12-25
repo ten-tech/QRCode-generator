@@ -142,6 +142,56 @@ document.addEventListener('DOMContentLoaded', function() {
         frameColorPreview.style.color = getContrastColor(frameColorInput.value);
     }
 
+    // ========== GESTION DU GRADIENT ==========
+    const gradientToggle = document.getElementById('id_use_gradient');
+    const gradientOptions = document.getElementById('gradient-options');
+
+    function toggleGradientOptions() {
+        if (gradientToggle && gradientOptions) {
+            if (gradientToggle.checked) {
+                gradientOptions.style.display = 'block';
+            } else {
+                gradientOptions.style.display = 'none';
+            }
+        }
+    }
+
+    if (gradientToggle) {
+        // Initialise au chargement
+        toggleGradientOptions();
+        gradientToggle.addEventListener('change', toggleGradientOptions);
+    }
+
+    // Aperçu des couleurs du dégradé
+    const gradientStartInput = document.getElementById('id_gradient_color_start');
+    const gradientEndInput = document.getElementById('id_gradient_color_end');
+
+    if (gradientStartInput) {
+        const gradientStartPreview = document.getElementById('gradient-start-preview');
+        gradientStartInput.addEventListener('input', function() {
+            gradientStartPreview.textContent = this.value.toUpperCase();
+            gradientStartPreview.style.background = this.value;
+            gradientStartPreview.style.color = getContrastColor(this.value);
+        });
+        // Initialise l'aperçu
+        gradientStartPreview.textContent = gradientStartInput.value.toUpperCase();
+        gradientStartPreview.style.background = gradientStartInput.value;
+        gradientStartPreview.style.color = getContrastColor(gradientStartInput.value);
+    }
+
+    if (gradientEndInput) {
+        const gradientEndPreview = document.getElementById('gradient-end-preview');
+        gradientEndInput.addEventListener('input', function() {
+            gradientEndPreview.textContent = this.value.toUpperCase();
+            gradientEndPreview.style.background = this.value;
+            gradientEndPreview.style.color = getContrastColor(this.value);
+        });
+        // Initialise l'aperçu
+        gradientEndPreview.textContent = gradientEndInput.value.toUpperCase();
+        gradientEndPreview.style.background = gradientEndInput.value;
+        gradientEndPreview.style.color = getContrastColor(gradientEndInput.value);
+    }
+
     // Affichage du fichier uploadé
     const fileInput = document.getElementById('id_logo');
     const fileName = document.getElementById('file-name');
@@ -302,7 +352,13 @@ document.addEventListener('DOMContentLoaded', function() {
             enable_frame: frameToggle?.checked ? 'true' : 'false',
             frame_width: frameWidthInput?.value || '30',
             frame_color: frameColorInput?.value || '#FFFFFF',
-            frame_text: document.getElementById('id_frame_text')?.value || ''
+            frame_text: document.getElementById('id_frame_text')?.value || '',
+            use_gradient: gradientToggle?.checked ? 'true' : 'false',
+            gradient_color_start: gradientStartInput?.value || '#667eea',
+            gradient_color_end: gradientEndInput?.value || '#764ba2',
+            gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
+            module_style: document.getElementById('id_module_style')?.value || 'square',
+            global_shape: document.getElementById('id_global_shape')?.value || 'square'
         };
 
         // Collecte les données spécifiques au template
@@ -447,7 +503,14 @@ document.addEventListener('DOMContentLoaded', function() {
         frameToggle,
         frameWidthInput,
         frameColorInput,
-        document.getElementById('id_frame_text')
+        document.getElementById('id_frame_text'),
+        // Personnalisation avancée
+        gradientToggle,
+        gradientStartInput,
+        gradientEndInput,
+        document.getElementById('id_gradient_direction'),
+        document.getElementById('id_module_style'),
+        document.getElementById('id_global_shape')
     ];
 
     previewInputs.forEach(input => {
