@@ -119,6 +119,57 @@ def qr_code_generator(request):
     return render(request, "qr_code/generator.html", {"form": form, "qr_image_data": qr_image_data})
 
 
+def format_vcard(name, org="", phone="", email="", url=""):
+    """Formate les données en vCard 3.0"""
+    vcard = "BEGIN:VCARD\n"
+    vcard += "VERSION:3.0\n"
+    if name:
+        vcard += f"FN:{name}\n"
+    if org:
+        vcard += f"ORG:{org}\n"
+    if phone:
+        vcard += f"TEL:{phone}\n"
+    if email:
+        vcard += f"EMAIL:{email}\n"
+    if url:
+        vcard += f"URL:{url}\n"
+    vcard += "END:VCARD"
+    return vcard
+
+
+def format_wifi(ssid, password="", security="WPA"):
+    """Formate les données en WiFi QR code"""
+    # Format: WIFI:T:WPA;S:mynetwork;P:mypass;;
+    wifi = f"WIFI:T:{security};S:{ssid};"
+    if password:
+        wifi += f"P:{password};"
+    wifi += ";"
+    return wifi
+
+
+def format_email(to, subject="", body=""):
+    """Formate les données en mailto URL"""
+    from urllib.parse import quote
+    email = f"mailto:{to}"
+    params = []
+    if subject:
+        params.append(f"subject={quote(subject)}")
+    if body:
+        params.append(f"body={quote(body)}")
+    if params:
+        email += "?" + "&".join(params)
+    return email
+
+
+def format_sms(phone, message=""):
+    """Formate les données en SMS URL"""
+    from urllib.parse import quote
+    sms = f"sms:{phone}"
+    if message:
+        sms += f"?body={quote(message)}"
+    return sms
+
+
 def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
                      logo=None, enable_frame=False, frame_width=30,
                      frame_color="#FFFFFF", frame_text=""):
@@ -207,10 +258,41 @@ def qr_preview_api(request):
     try:
         data = json.loads(request.body)
 
-        # Récupère les paramètres
-        text = data.get('text', '')
+        # Récupère le type de template
+        template_type = data.get('template_type', 'text')
+
+        # Génère le texte selon le template
+        text = ''
+        if template_type == 'text':
+            text = data.get('text', '')
+        elif template_type == 'vcard':
+            text = format_vcard(
+                name=data.get('vcard_name', ''),
+                org=data.get('vcard_org', ''),
+                phone=data.get('vcard_phone', ''),
+                email=data.get('vcard_email', ''),
+                url=data.get('vcard_url', '')
+            )
+        elif template_type == 'wifi':
+            text = format_wifi(
+                ssid=data.get('wifi_ssid', ''),
+                password=data.get('wifi_password', ''),
+                security=data.get('wifi_security', 'WPA')
+            )
+        elif template_type == 'email':
+            text = format_email(
+                to=data.get('email_to', ''),
+                subject=data.get('email_subject', ''),
+                body=data.get('email_body', '')
+            )
+        elif template_type == 'sms':
+            text = format_sms(
+                phone=data.get('sms_phone', ''),
+                message=data.get('sms_message', '')
+            )
+
         if not text:
-            return JsonResponse({'success': False, 'error': 'Texte requis'}, status=400)
+            return JsonResponse({'success': False, 'error': 'Données requises'}, status=400)
 
         fill_color = data.get('fill_color', '#000000') or '#000000'
         bg_color = data.get('bg_color', '#FFFFFF') or '#FFFFFF'

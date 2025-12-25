@@ -1,4 +1,34 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Template switching
+    const templateRadios = document.querySelectorAll('.template-radio');
+    const templateFieldsSections = document.querySelectorAll('.template-fields');
+
+    function switchTemplate() {
+        const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
+
+        // Hide all template fields
+        templateFieldsSections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Show selected template fields
+        const selectedSection = document.querySelector(`.template-fields[data-template="${selectedTemplate}"]`);
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
+        }
+    }
+
+    templateRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            switchTemplate();
+            // Trigger preview update when template changes
+            debouncedPreview();
+        });
+    });
+
+    // Initialize template display
+    switchTemplate();
+
     // Color picker synchronization
     const fillColorInput = document.getElementById('id_fill_color');
     const bgColorInput = document.getElementById('id_bg_color');
@@ -142,15 +172,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generatePreview() {
-        const text = textInput?.value.trim();
-        if (!text) return;
+        // Get selected template type
+        const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
 
         // Show spinner
         if (loadingSpinner) loadingSpinner.style.display = 'flex';
 
-        // Collect form data
+        // Collect common data
         const formData = {
-            text: text,
+            template_type: selectedTemplate,
             fill_color: fillColorInput?.value || '#000000',
             bg_color: bgColorInput?.value || '#FFFFFF',
             border_size: borderInput?.value || '4',
@@ -159,6 +189,48 @@ document.addEventListener('DOMContentLoaded', function() {
             frame_color: frameColorInput?.value || '#FFFFFF',
             frame_text: document.getElementById('id_frame_text')?.value || ''
         };
+
+        // Collect template-specific data
+        if (selectedTemplate === 'text') {
+            formData.text = textInput?.value.trim() || '';
+            if (!formData.text) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'vcard') {
+            formData.vcard_name = document.getElementById('id_vcard_name')?.value || '';
+            formData.vcard_org = document.getElementById('id_vcard_org')?.value || '';
+            formData.vcard_phone = document.getElementById('id_vcard_phone')?.value || '';
+            formData.vcard_email = document.getElementById('id_vcard_email')?.value || '';
+            formData.vcard_url = document.getElementById('id_vcard_url')?.value || '';
+            if (!formData.vcard_name && !formData.vcard_email && !formData.vcard_phone) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'wifi') {
+            formData.wifi_ssid = document.getElementById('id_wifi_ssid')?.value || '';
+            formData.wifi_password = document.getElementById('id_wifi_password')?.value || '';
+            formData.wifi_security = document.getElementById('id_wifi_security')?.value || 'WPA';
+            if (!formData.wifi_ssid) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'email') {
+            formData.email_to = document.getElementById('id_email_to')?.value || '';
+            formData.email_subject = document.getElementById('id_email_subject')?.value || '';
+            formData.email_body = document.getElementById('id_email_body')?.value || '';
+            if (!formData.email_to) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'sms') {
+            formData.sms_phone = document.getElementById('id_sms_phone')?.value || '';
+            formData.sms_message = document.getElementById('id_sms_message')?.value || '';
+            if (!formData.sms_phone) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        }
 
         // Call API
         fetch('/api/preview', {
@@ -193,7 +265,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listeners for real-time preview
     const previewInputs = [
+        // Text template
         textInput,
+        // vCard template
+        document.getElementById('id_vcard_name'),
+        document.getElementById('id_vcard_org'),
+        document.getElementById('id_vcard_phone'),
+        document.getElementById('id_vcard_email'),
+        document.getElementById('id_vcard_url'),
+        // WiFi template
+        document.getElementById('id_wifi_ssid'),
+        document.getElementById('id_wifi_password'),
+        document.getElementById('id_wifi_security'),
+        // Email template
+        document.getElementById('id_email_to'),
+        document.getElementById('id_email_subject'),
+        document.getElementById('id_email_body'),
+        // SMS template
+        document.getElementById('id_sms_phone'),
+        document.getElementById('id_sms_message'),
+        // Common fields
         fillColorInput,
         bgColorInput,
         borderInput,

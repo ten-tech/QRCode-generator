@@ -16,12 +16,98 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
+                <!-- Template Selector -->
                 <div class="form-group">
-                    <label for="id_text">{{ form.text.label }}</label>
-                    {{ form.text }}
-                    {% if form.text.errors %}
-                        <div class="error">{{ form.text.errors }}</div>
-                    {% endif %}
+                    <label>{{ form.template_type.label }}</label>
+                    <div class="template-selector">
+                        {% for value, label in form.template_type.field.choices %}
+                            <label class="template-option">
+                                <input type="radio" name="template_type" value="{{ value }}"
+                                       {% if value == 'text' %}checked{% endif %}
+                                       class="template-radio">
+                                <span class="template-label">{{ label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Text/URL Template Fields -->
+                <div class="template-fields" data-template="text">
+                    <div class="form-group">
+                        <label for="id_text">{{ form.text.label }}</label>
+                        {{ form.text }}
+                        {% if form.text.errors %}
+                            <div class="error">{{ form.text.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- vCard Template Fields -->
+                <div class="template-fields" data-template="vcard" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_vcard_name">{{ form.vcard_name.label }}</label>
+                        {{ form.vcard_name }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_vcard_org">{{ form.vcard_org.label }}</label>
+                        {{ form.vcard_org }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_vcard_phone">{{ form.vcard_phone.label }}</label>
+                        {{ form.vcard_phone }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_vcard_email">{{ form.vcard_email.label }}</label>
+                        {{ form.vcard_email }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_vcard_url">{{ form.vcard_url.label }}</label>
+                        {{ form.vcard_url }}
+                    </div>
+                </div>
+
+                <!-- WiFi Template Fields -->
+                <div class="template-fields" data-template="wifi" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_wifi_ssid">{{ form.wifi_ssid.label }}</label>
+                        {{ form.wifi_ssid }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_wifi_password">{{ form.wifi_password.label }}</label>
+                        {{ form.wifi_password }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_wifi_security">{{ form.wifi_security.label }}</label>
+                        {{ form.wifi_security }}
+                    </div>
+                </div>
+
+                <!-- Email Template Fields -->
+                <div class="template-fields" data-template="email" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_email_to">{{ form.email_to.label }}</label>
+                        {{ form.email_to }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_email_subject">{{ form.email_subject.label }}</label>
+                        {{ form.email_subject }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_email_body">{{ form.email_body.label }}</label>
+                        {{ form.email_body }}
+                    </div>
+                </div>
+
+                <!-- SMS Template Fields -->
+                <div class="template-fields" data-template="sms" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_sms_phone">{{ form.sms_phone.label }}</label>
+                        {{ form.sms_phone }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_sms_message">{{ form.sms_message.label }}</label>
+                        {{ form.sms_message }}
+                    </div>
                 </div>
 
                 <div class="form-group">
