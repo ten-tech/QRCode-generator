@@ -223,7 +223,9 @@ def format_payment(payment_type, recipient, amount=""):
 
 def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
                      logo=None, enable_frame=False, frame_width=30,
-                     frame_color="#FFFFFF", frame_text=""):
+                     frame_color="#FFFFFF", frame_text="",
+                     use_gradient=False, gradient_color_start="#667eea", gradient_color_end="#764ba2",
+                     gradient_direction="diagonal", module_style="square", global_shape="square"):
     """
     Fonction helper pour générer une image QR code
     Retourne l'image en base64 data URI
@@ -237,7 +239,66 @@ def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
     )
     qr.add_data(text)
     qr.make(fit=True)
-    img = qr.make_image(fill_color=fill_color, back_color=bg_color).convert("RGBA")
+
+    # Si module personnalisé ou gradient, dessine manuellement
+    if module_style != 'square' or use_gradient:
+        # Récupère la matrice QR
+        modules = qr.modules
+        box_size = 10
+        size = (len(modules) + border_size * 2) * box_size
+
+        # Crée une image vide
+        img = Image.new('RGBA', (size, size), bg_color)
+        draw = ImageDraw.Draw(img)
+
+        # Prépare les couleurs (avec ou sans gradient)
+        def get_color_for_position(row, col, max_rows, max_cols):
+            if not use_gradient:
+                return fill_color
+
+            # Parse les couleurs hex
+            r1, g1, b1 = tuple(int(gradient_color_start.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+            r2, g2, b2 = tuple(int(gradient_color_end.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+
+            # Calcule le ratio selon la direction
+            if gradient_direction == 'horizontal':
+                ratio = col / max_cols
+            elif gradient_direction == 'vertical':
+                ratio = row / max_rows
+            else:  # diagonal
+                ratio = (row + col) / (max_rows + max_cols)
+
+            # Interpole les couleurs
+            r = int(r1 + (r2 - r1) * ratio)
+            g = int(g1 + (g2 - g1) * ratio)
+            b = int(b1 + (b2 - b1) * ratio)
+
+            return f'#{r:02x}{g:02x}{b:02x}'
+
+        # Dessine chaque module
+        max_rows = len(modules)
+        max_cols = len(modules[0]) if modules else 0
+
+        for row in range(len(modules)):
+            for col in range(len(modules[row])):
+                if modules[row][col]:
+                    x = (col + border_size) * box_size
+                    y = (row + border_size) * box_size
+                    color = get_color_for_position(row, col, max_rows, max_cols)
+
+                    if module_style == 'rounded':
+                        # Modules ronds
+                        draw.ellipse([x, y, x + box_size, y + box_size], fill=color)
+                    elif module_style == 'rounded-corners':
+                        # Modules avec coins arrondis
+                        radius = box_size // 3
+                        draw.rounded_rectangle([x, y, x + box_size, y + box_size], radius=radius, fill=color)
+                    else:
+                        # Modules carrés
+                        draw.rectangle([x, y, x + box_size, y + box_size], fill=color)
+    else:
+        # Génération standard
+        img = qr.make_image(fill_color=fill_color, back_color=bg_color).convert("RGBA")
 
     # Ajout du logo si fourni
     if logo:
@@ -249,6 +310,19 @@ def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
             img.paste(logo_img, pos, logo_img)
         except:
             pass  # Ignore logo errors in preview
+
+    # Application de la forme globale circulaire
+    if global_shape == 'circle':
+        size = img.size[0]
+        mask = Image.new('L', (size, size), 0)
+        mask_draw = ImageDraw.Draw(mask)
+        mask_draw.ellipse([0, 0, size, size], fill=255)
+
+        # Crée une nouvelle image avec fond transparent
+        circular_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+        circular_img.paste(img, (0, 0))
+        circular_img.putalpha(mask)
+        img = circular_img
 
     # Ajout du cadre si activé
     if enable_frame:
@@ -371,6 +445,12 @@ def qr_preview_api(request):
         frame_width = int(data.get('frame_width', 30))
         frame_color = data.get('frame_color', '#FFFFFF') or '#FFFFFF'
         frame_text = data.get('frame_text', '')
+        use_gradient = data.get('use_gradient', 'false') == 'true'
+        gradient_color_start = data.get('gradient_color_start', '#667eea') or '#667eea'
+        gradient_color_end = data.get('gradient_color_end', '#764ba2') or '#764ba2'
+        gradient_direction = data.get('gradient_direction', 'diagonal') or 'diagonal'
+        module_style = data.get('module_style', 'square') or 'square'
+        global_shape = data.get('global_shape', 'square') or 'square'
 
         # Génère l'image QR
         qr_image = generate_qr_image(
@@ -381,7 +461,13 @@ def qr_preview_api(request):
             enable_frame=enable_frame,
             frame_width=frame_width,
             frame_color=frame_color,
-            frame_text=frame_text
+            frame_text=frame_text,
+            use_gradient=use_gradient,
+            gradient_color_start=gradient_color_start,
+            gradient_color_end=gradient_color_end,
+            gradient_direction=gradient_direction,
+            module_style=module_style,
+            global_shape=global_shape
         )
 
         return JsonResponse({'success': True, 'image': qr_image})
