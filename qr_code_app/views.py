@@ -170,6 +170,57 @@ def format_sms(phone, message=""):
     return sms
 
 
+def format_event(title, start="", end="", location="", description=""):
+    """Formate les données en événement iCalendar"""
+    from datetime import datetime
+
+    event = "BEGIN:VEVENT\n"
+    if title:
+        event += f"SUMMARY:{title}\n"
+    if start:
+        # Convertir format datetime-local vers iCal (YYYYMMDDTHHMMSS)
+        try:
+            dt = datetime.fromisoformat(start)
+            event += f"DTSTART:{dt.strftime('%Y%m%dT%H%M%S')}\n"
+        except:
+            pass
+    if end:
+        try:
+            dt = datetime.fromisoformat(end)
+            event += f"DTEND:{dt.strftime('%Y%m%dT%H%M%S')}\n"
+        except:
+            pass
+    if location:
+        event += f"LOCATION:{location}\n"
+    if description:
+        event += f"DESCRIPTION:{description}\n"
+    event += "END:VEVENT"
+    return event
+
+
+def format_geo(latitude, longitude):
+    """Formate les données en géolocalisation"""
+    # Format: geo:latitude,longitude
+    return f"geo:{latitude},{longitude}"
+
+
+def format_payment(payment_type, recipient, amount=""):
+    """Formate les données en URL de paiement"""
+    if payment_type == 'paypal':
+        # PayPal.me format
+        payment = f"https://paypal.me/{recipient}"
+        if amount:
+            payment += f"/{amount}"
+    elif payment_type == 'bitcoin':
+        # Bitcoin URI format
+        payment = f"bitcoin:{recipient}"
+        if amount:
+            payment += f"?amount={amount}"
+    else:
+        payment = ""
+    return payment
+
+
 def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
                      logo=None, enable_frame=False, frame_width=30,
                      frame_color="#FFFFFF", frame_text=""):
@@ -289,6 +340,25 @@ def qr_preview_api(request):
             text = format_sms(
                 phone=data.get('sms_phone', ''),
                 message=data.get('sms_message', '')
+            )
+        elif template_type == 'event':
+            text = format_event(
+                title=data.get('event_title', ''),
+                start=data.get('event_start', ''),
+                end=data.get('event_end', ''),
+                location=data.get('event_location', ''),
+                description=data.get('event_description', '')
+            )
+        elif template_type == 'geo':
+            latitude = data.get('geo_latitude', '')
+            longitude = data.get('geo_longitude', '')
+            if latitude and longitude:
+                text = format_geo(latitude=latitude, longitude=longitude)
+        elif template_type == 'payment':
+            text = format_payment(
+                payment_type=data.get('payment_type', 'paypal'),
+                recipient=data.get('payment_recipient', ''),
+                amount=data.get('payment_amount', '')
             )
 
         if not text:

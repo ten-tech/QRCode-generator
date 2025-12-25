@@ -345,6 +345,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
+        } else if (selectedTemplate === 'event') {
+            formData.event_title = document.getElementById('id_event_title')?.value || '';
+            formData.event_start = document.getElementById('id_event_start')?.value || '';
+            formData.event_end = document.getElementById('id_event_end')?.value || '';
+            formData.event_location = document.getElementById('id_event_location')?.value || '';
+            formData.event_description = document.getElementById('id_event_description')?.value || '';
+            if (!formData.event_title) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'geo') {
+            formData.geo_latitude = document.getElementById('id_geo_latitude')?.value || '';
+            formData.geo_longitude = document.getElementById('id_geo_longitude')?.value || '';
+            if (!formData.geo_latitude || !formData.geo_longitude) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
+        } else if (selectedTemplate === 'payment') {
+            formData.payment_type = document.getElementById('id_payment_type')?.value || 'paypal';
+            formData.payment_recipient = document.getElementById('id_payment_recipient')?.value || '';
+            formData.payment_amount = document.getElementById('id_payment_amount')?.value || '';
+            if (!formData.payment_recipient) {
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                return;
+            }
         }
 
         // Appelle l'API
@@ -402,6 +427,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Template SMS
         document.getElementById('id_sms_phone'),
         document.getElementById('id_sms_message'),
+        // Template Event
+        document.getElementById('id_event_title'),
+        document.getElementById('id_event_start'),
+        document.getElementById('id_event_end'),
+        document.getElementById('id_event_location'),
+        document.getElementById('id_event_description'),
+        // Template Geolocation
+        document.getElementById('id_geo_latitude'),
+        document.getElementById('id_geo_longitude'),
+        // Template Payment
+        document.getElementById('id_payment_type'),
+        document.getElementById('id_payment_recipient'),
+        document.getElementById('id_payment_amount'),
         // Champs communs
         fillColorInput,
         bgColorInput,
@@ -577,8 +615,21 @@ function restoreFromHistory(config) {
     } else if (config.template_type === 'sms') {
         if (config.sms_phone) document.getElementById('id_sms_phone').value = config.sms_phone;
         if (config.sms_message) document.getElementById('id_sms_message').value = config.sms_message;
+    } else if (config.template_type === 'event') {
+        if (config.event_title) document.getElementById('id_event_title').value = config.event_title;
+        if (config.event_start) document.getElementById('id_event_start').value = config.event_start;
+        if (config.event_end) document.getElementById('id_event_end').value = config.event_end;
+        if (config.event_location) document.getElementById('id_event_location').value = config.event_location;
+        if (config.event_description) document.getElementById('id_event_description').value = config.event_description;
+    } else if (config.template_type === 'geo') {
+        if (config.geo_latitude) document.getElementById('id_geo_latitude').value = config.geo_latitude;
+        if (config.geo_longitude) document.getElementById('id_geo_longitude').value = config.geo_longitude;
+    } else if (config.template_type === 'payment') {
+        if (config.payment_type) document.getElementById('id_payment_type').value = config.payment_type;
+        if (config.payment_recipient) document.getElementById('id_payment_recipient').value = config.payment_recipient;
+        if (config.payment_amount) document.getElementById('id_payment_amount').value = config.payment_amount;
     }
-    
+
     // Restaure les couleurs
     if (config.fill_color) {
         const fillInput = document.getElementById('id_fill_color');

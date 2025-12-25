@@ -139,6 +139,58 @@
                     </div>
                 </div>
 
+                <!-- Event/Calendar Template Fields -->
+                <div class="template-fields" data-template="event" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_event_title">{{ form.event_title.label }}</label>
+                        {{ form.event_title }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_event_start">{{ form.event_start.label }}</label>
+                        {{ form.event_start }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_event_end">{{ form.event_end.label }}</label>
+                        {{ form.event_end }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_event_location">{{ form.event_location.label }}</label>
+                        {{ form.event_location }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_event_description">{{ form.event_description.label }}</label>
+                        {{ form.event_description }}
+                    </div>
+                </div>
+
+                <!-- Geolocation Template Fields -->
+                <div class="template-fields" data-template="geo" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_geo_latitude">{{ form.geo_latitude.label }}</label>
+                        {{ form.geo_latitude }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_geo_longitude">{{ form.geo_longitude.label }}</label>
+                        {{ form.geo_longitude }}
+                    </div>
+                </div>
+
+                <!-- Payment Template Fields -->
+                <div class="template-fields" data-template="payment" style="display:none;">
+                    <div class="form-group">
+                        <label for="id_payment_type">{{ form.payment_type.label }}</label>
+                        {{ form.payment_type }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_payment_recipient">{{ form.payment_recipient.label }}</label>
+                        {{ form.payment_recipient }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_payment_amount">{{ form.payment_amount.label }}</label>
+                        {{ form.payment_amount }}
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Couleurs du QR Code</label>
                     <div class="color-picker-group">

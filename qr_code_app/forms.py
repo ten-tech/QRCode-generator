@@ -8,6 +8,9 @@ class QRCodeForm(forms.Form):
         ('wifi', 'WiFi'),
         ('email', 'Email'),
         ('sms', 'SMS'),
+        ('event', 'Événement'),
+        ('geo', 'Localisation'),
+        ('payment', 'Paiement'),
     ]
 
     template_type = forms.ChoiceField(
@@ -170,6 +173,120 @@ class QRCodeForm(forms.Form):
             'class': 'neumorphic-input',
             'placeholder': 'Votre message...',
             'data-template': 'sms'
+        })
+    )
+
+    # Event/Calendar fields
+    event_title = forms.CharField(
+        label="Titre de l'événement",
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: Réunion équipe',
+            'data-template': 'event'
+        })
+    )
+    event_start = forms.DateTimeField(
+        label="Date et heure de début",
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'neumorphic-input',
+            'type': 'datetime-local',
+            'data-template': 'event'
+        })
+    )
+    event_end = forms.DateTimeField(
+        label="Date et heure de fin",
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'neumorphic-input',
+            'type': 'datetime-local',
+            'data-template': 'event'
+        })
+    )
+    event_location = forms.CharField(
+        label="Lieu",
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: Salle de conférence A',
+            'data-template': 'event'
+        })
+    )
+    event_description = forms.CharField(
+        label="Description",
+        max_length=500,
+        required=False,
+        widget=forms.Textarea(attrs={
+            'rows': 3,
+            'class': 'neumorphic-input',
+            'placeholder': 'Description de l\'événement...',
+            'data-template': 'event'
+        })
+    )
+
+    # Geolocation fields
+    geo_latitude = forms.DecimalField(
+        label="Latitude",
+        max_digits=9,
+        decimal_places=6,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: 48.856614',
+            'step': '0.000001',
+            'data-template': 'geo'
+        })
+    )
+    geo_longitude = forms.DecimalField(
+        label="Longitude",
+        max_digits=9,
+        decimal_places=6,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: 2.352222',
+            'step': '0.000001',
+            'data-template': 'geo'
+        })
+    )
+
+    # Payment fields
+    payment_type = forms.ChoiceField(
+        label="Type de paiement",
+        choices=[
+            ('paypal', 'PayPal'),
+            ('bitcoin', 'Bitcoin'),
+        ],
+        initial='paypal',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input',
+            'data-template': 'payment'
+        })
+    )
+    payment_recipient = forms.CharField(
+        label="Destinataire",
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: username ou adresse BTC',
+            'data-template': 'payment'
+        })
+    )
+    payment_amount = forms.DecimalField(
+        label="Montant",
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'neumorphic-input',
+            'placeholder': 'Ex: 10.00',
+            'step': '0.01',
+            'data-template': 'payment'
         })
     )
 
