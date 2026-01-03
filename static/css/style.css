@@ -40,6 +40,7 @@ body {
   align-items: center;
   padding: 20px;
   line-height: 1.6;
+  overflow-x: hidden; /* Empêche le scroll horizontal */
 }
 
 /* ========== CONTAINER ========== */
@@ -56,11 +57,18 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 0;
   padding: 40px;
+  box-sizing: border-box;
+}
+
+.container * {
+  box-sizing: border-box;
 }
 
 /* ========== SECTIONS ========== */
 .form-section {
   padding: 20px 40px 20px 20px;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .result-section {
@@ -69,6 +77,8 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ========== TYPOGRAPHY ========== */
@@ -290,8 +300,8 @@ input[type="file"].neumorphic-file {
 
 .toggle-switch {
   position: relative;
-  width: 60px;
-  height: 30px;
+  width: 45px;
+  height: 24px;
   display: inline-block;
   cursor: pointer;
 }
@@ -320,10 +330,10 @@ input[type="checkbox"].neumorphic-checkbox {
 .toggle-slider:before {
   position: absolute;
   content: "";
-  height: 22px;
-  width: 22px;
-  left: 4px;
-  bottom: 4px;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
   background: var(--bg-main);
   border-radius: 50%;
   transition: var(--transition);
@@ -333,10 +343,10 @@ input[type="checkbox"].neumorphic-checkbox {
 .toggle-slider:after {
   content: "OFF";
   position: absolute;
-  right: 8px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--text-secondary);
   transition: var(--transition);
@@ -348,16 +358,17 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider {
 }
 
 input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:before {
-  transform: translateX(30px);
+  transform: translateX(21px);
   box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light),
     0 0 10px rgba(102, 126, 234, 0.5);
 }
 
 input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
   content: "ON";
-  left: 8px;
+  left: 4px;
   right: auto;
   color: var(--accent);
+  font-size: 8px;
 }
 
 .frame-options {
@@ -632,9 +643,11 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
   .toggle-wrapper label {
     flex: 1;
     min-width: 0;
-    max-width: calc(100% - 70px); /* Laisse de la place pour le toggle */
+    max-width: calc(100% - 55px); /* Laisse de la place pour le toggle */
     font-size: 13px;
   }
+
+  /* Toggle switches - même taille sur mobile (déjà définie par défaut) */
 
   .neumorphic-input,
   input[type="text"],
@@ -644,6 +657,24 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
     padding: 12px 15px;
     font-size: 13px;
     min-width: 0; /* Permet au flexbox de réduire si nécessaire */
+  }
+
+  /* Réduit les paddings des accordions sur mobile */
+  .accordion-header {
+    padding: 10px 12px;
+  }
+
+  .accordion-body {
+    padding: 0 8px;
+  }
+
+  .accordion-body.active {
+    padding: 15px 8px;
+  }
+
+  .accordion-section {
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   input[type="color"].neumorphic-color {
@@ -719,6 +750,30 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
   textarea {
     padding: 10px 12px;
     font-size: 12px;
+  }
+
+  /* Réduit encore plus les paddings des accordions */
+  .accordion-header {
+    padding: 8px 10px;
+  }
+
+  .accordion-body {
+    padding: 0 6px;
+  }
+
+  .accordion-body.active {
+    padding: 12px 6px;
+  }
+
+  .accordion-header-content {
+    font-size: 14px;
+  }
+
+  /* Toggle switches - même taille sur extra small (déjà définie par défaut) */
+
+  .toggle-wrapper .toggle-label,
+  .toggle-wrapper label {
+    max-width: calc(100% - 55px);
   }
 }
 
@@ -1610,6 +1665,13 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
 /* ========== ACCORDÉONS ========== */
 .accordion-section {
   margin-top: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.accordion-section * {
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .accordion-header {
