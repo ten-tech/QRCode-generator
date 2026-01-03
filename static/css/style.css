@@ -300,13 +300,14 @@ input[type="file"].neumorphic-file {
 
 .toggle-switch {
   position: relative;
-  width: 45px;
-  height: 24px;
+  width: 45px !important;
+  height: 24px !important;
   display: inline-block;
   cursor: pointer;
-  flex-shrink: 0; /* Empêche le toggle d'être étiré par flexbox */
-  min-width: 45px; /* Force la largeur minimale */
-  max-width: 45px; /* Force la largeur maximale */
+  flex-shrink: 0 !important;
+  min-width: 45px !important;
+  max-width: 45px !important;
+  overflow: hidden; /* Empêche tout débordement */
 }
 
 input[type="checkbox"].neumorphic-checkbox {
@@ -650,7 +651,14 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
     font-size: 13px;
   }
 
-  /* Toggle switches - même taille sur mobile (déjà définie par défaut) */
+  /* Toggle switches - Force absolue de la taille sur mobile */
+  .toggle-switch {
+    width: 45px !important;
+    height: 24px !important;
+    min-width: 45px !important;
+    max-width: 45px !important;
+    flex-shrink: 0 !important;
+  }
 
   .neumorphic-input,
   input[type="text"],
@@ -772,7 +780,14 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
     font-size: 14px;
   }
 
-  /* Toggle switches - même taille sur extra small (déjà définie par défaut) */
+  /* Toggle switches - Force absolue de la taille sur extra small */
+  .toggle-switch {
+    width: 45px !important;
+    height: 24px !important;
+    min-width: 45px !important;
+    max-width: 45px !important;
+    flex-shrink: 0 !important;
+  }
 
   .toggle-wrapper .toggle-label,
   .toggle-wrapper label {
