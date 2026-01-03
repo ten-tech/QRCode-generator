@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: qr-code-generator
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn qr_code_generator.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: qr-code-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+databases:
+  - name: qr-code-db
+    databaseName: qr_code_generator
+    user: qr_code_user
+    plan: free

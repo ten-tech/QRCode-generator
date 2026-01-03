@@ -115,6 +115,83 @@
               <label for="id_vcard_url">{{ form.vcard_url.label }}</label>
               {{ form.vcard_url }}
             </div>
+
+            <!-- Section Carte de Visite (uniquement pour vCard) -->
+            <div class="business-card-section">
+              <div class="toggle-wrapper">
+                <label class="toggle-label">{{ form.enable_business_card.label }}</label>
+                <label class="toggle-switch">
+                  {{ form.enable_business_card }}
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="business-card-options" id="business-card-options">
+                <div class="form-group">
+                  <label for="id_card_layout">{{ form.card_layout.label }}</label>
+                  {{ form.card_layout }}
+                </div>
+
+                <div class="color-picker-group">
+                  <div class="color-picker">
+                    <label for="id_card_bg_color">{{ form.card_bg_color.label }}</label>
+                    <div class="color-input-wrapper">
+                      {{ form.card_bg_color }}
+                      <div class="color-preview" id="card-bg-color-preview">#FFFFFF</div>
+                    </div>
+                  </div>
+
+                  <div class="color-picker">
+                    <label for="id_card_text_color">{{ form.card_text_color.label }}</label>
+                    <div class="color-input-wrapper">
+                      {{ form.card_text_color }}
+                      <div class="color-preview" id="card-text-color-preview">#2c3e50</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="color-picker">
+                  <label for="id_card_accent_color">{{ form.card_accent_color.label }}</label>
+                  <div class="color-input-wrapper">
+                    {{ form.card_accent_color }}
+                    <div class="color-preview" id="card-accent-color-preview">#667eea</div>
+                  </div>
+                </div>
+
+                <!-- Aperçu de la carte de visite -->
+                <div class="business-card-preview-container" id="business-card-preview-container" style="margin-top: 20px;">
+                  <h4 style="margin-bottom: 15px; color: var(--text-primary); font-size: 14px;">Aperçu de la carte</h4>
+                  <div class="business-card-preview" id="business-card-preview">
+                    <div class="business-card-qr-placeholder" id="card-qr-placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                      </svg>
+                    </div>
+                    <div class="business-card-info" id="card-info">
+                      <div class="card-name" id="card-preview-name">Votre Nom</div>
+                      <div class="card-org" id="card-preview-org">Votre Organisation</div>
+                      <div class="card-details">
+                        <div class="card-detail" id="card-preview-phone">📱 Téléphone</div>
+                        <div class="card-detail" id="card-preview-email">✉️ Email</div>
+                        <div class="card-detail" id="card-preview-url">🌐 Site web</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="download-btn download-btn-business-card" id="download-business-card" style="margin-top: 15px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Télécharger Carte PDF
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- WiFi Template Fields -->
@@ -253,29 +330,57 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Couleurs du QR Code</label>
-            <div class="color-picker-group">
-              <div class="color-picker">
-                <label for="id_fill_color">Couleur du QR</label>
-                <div class="color-input-wrapper">
-                  {{ form.fill_color }}
-                  <div class="color-preview" id="fill-color-preview">
-                    #000000
+          <!-- ========== SECTION ACCORDÉON: PERSONNALISATION QR ========== -->
+          <div class="accordion-section">
+            <button type="button" class="accordion-header" data-accordion="qr-customization">
+              <div class="accordion-header-content">
+                <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 3h7v7H3z"></path>
+                  <path d="M14 3h7v7h-7z"></path>
+                  <path d="M14 14h7v7h-7z"></path>
+                  <path d="M3 14h7v7H3z"></path>
+                </svg>
+                <span>Personnalisation du QR Code</span>
+              </div>
+              <svg class="accordion-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <div class="accordion-body" id="qr-customization">
+              <div class="form-group">
+                <label>Couleurs du QR Code</label>
+                <div class="color-picker-group">
+                  <div class="color-picker">
+                    <label for="id_fill_color">Couleur du QR</label>
+                    <div class="color-input-wrapper">
+                      {{ form.fill_color }}
+                      <div class="color-preview" id="fill-color-preview">
+                        #000000
+                      </div>
+                    </div>
+                  </div>
+                  <div class="color-picker">
+                    <label for="id_bg_color">Couleur de fond</label>
+                    <div class="color-input-wrapper">
+                      {{ form.bg_color }}
+                      <div class="color-preview" id="bg-color-preview">#FFFFFF</div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="color-picker">
-                <label for="id_bg_color">Couleur de fond</label>
-                <div class="color-input-wrapper">
-                  {{ form.bg_color }}
-                  <div class="color-preview" id="bg-color-preview">#FFFFFF</div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Personnalisation Design Avancée -->
+              <!-- Options Avancées (repliables) -->
+              <button type="button" class="advanced-options-toggle" id="advanced-options-toggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Options avancées
+              </button>
+
+              <div class="advanced-options" id="advanced-options" style="display: none;">
+                <!-- Personnalisation Design Avancée -->
           <div class="form-group">
             <label>Personnalisation Avancée</label>
 
@@ -417,12 +522,35 @@
             </div>
             <div class="file-name" id="file-name">Aucun fichier choisi</div>
           </div>
+              </div>
+              <!-- Fin Options Avancées -->
+            </div>
+            <!-- Fin Accordion Body -->
+          </div>
+          <!-- Fin Accordion Section Personnalisation QR -->
 
           <button type="submit" class="generate-btn">Générer le QR Code</button>
         </form>
 
-        <!-- Section Génération en Batch -->
-        <div class="batch-section">
+        <!-- ========== SECTION ACCORDÉON: GÉNÉRATION BATCH ========== -->
+        <div class="accordion-section">
+          <button type="button" class="accordion-header" data-accordion="batch-generation">
+            <div class="accordion-header-content">
+              <svg class="accordion-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Génération en Batch</span>
+            </div>
+            <svg class="accordion-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          <div class="accordion-body" id="batch-generation" style="display: none;">
+            <div class="batch-section">
           <h3 class="batch-title">Génération en Batch</h3>
           <p class="batch-subtitle">
             Générez plusieurs QR codes à partir d'un fichier CSV
@@ -504,7 +632,12 @@ Hello World,hello</pre
               <div class="batch-progress-fill"></div>
             </div>
           </div>
+            </div>
+            <!-- Fin batch-section -->
+          </div>
+          <!-- Fin Accordion Body Batch -->
         </div>
+        <!-- Fin Accordion Section Batch -->
       </div>
 
       <div class="result-section">
@@ -552,6 +685,27 @@ Hello World,hello</pre
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
               SVG
+            </a>
+            <a
+              href="#"
+              id="download-pdf-btn"
+              class="download-btn download-btn-pdf"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              PDF
             </a>
           </div>
         </div>

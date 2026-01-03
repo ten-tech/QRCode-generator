@@ -1,263 +1,328 @@
-# Générateur de QR Code Moderne - Design Neumorphisme
+# 🎨 QR Code Generator Premium
 
-Une application web Django pour générer des QR codes personnalisés avec un design élégant et une expérience utilisateur exceptionnelle.
+Un générateur de QR codes moderne et puissant avec design neumorphique, offrant des fonctionnalités avancées de personnalisation et d'export.
 
-## Démarrage Rapide
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+![Django](https://img.shields.io/badge/django-5.0+-green.svg)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-### Lancement en 3 étapes
+## ✨ Fonctionnalités
 
-#### 1. Activer l'environnement virtuel
+### 🎯 Templates Spécialisés
+
+- **Texte/URL** - QR codes classiques pour liens et textes
+- **vCard** - Cartes de visite numériques
+- **WiFi** - Connexion WiFi instantanée
+- **Email** - Envoi d'emails pré-remplis
+- **SMS** - Messages texte pré-configurés
+- **Événement** - Ajout automatique au calendrier (iCalendar)
+- **Géolocalisation** - Coordonnées GPS
+- **Paiement** - PayPal et Bitcoin
+
+### 🎨 Personnalisation Avancée
+
+- **Couleurs personnalisées** - QR code et fond
+- **Dégradés de couleurs** - Horizontal, vertical ou diagonal
+- **Styles de modules** - Carrés, ronds ou coins arrondis
+- **Formes globales** - Carrée ou circulaire
+- **Cadre personnalisable** - Avec texte et couleurs
+- **Logo central** - Insertion d'image au centre
+
+### 🚀 Fonctionnalités Premium
+
+- **Aperçu en temps réel** - Génération instantanée pendant la frappe
+- **Export multiple formats** - PNG, SVG vectoriel, PDF haute résolution (600 DPI)
+- **Génération en batch** - Upload CSV → ZIP de QR codes
+- **Historique localStorage** - Sauvegarde des 10 derniers QR codes
+- **Mode sombre** - Thème automatique selon les préférences système
+- **Interface responsive** - Optimisée mobile, tablette et desktop
+
+## 🖼️ Design
+
+Interface moderne avec **neumorphisme** (soft UI) :
+
+- Design élégant et intuitif
+- Ombres et reliefs subtils
+- Transitions fluides
+- Support complet du mode sombre
+- Sticky positioning sur desktop pour l'aperçu
+
+## 📋 Prérequis
+
+- Python 3.11+
+- Django 5.0+
+- Pillow (PIL)
+- qrcode
+- reportlab
+
+## 🔧 Installation
+
+### 1. Cloner le projet
 
 ```bash
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate     # Windows
+git clone https://github.com/votre-username/qr-code-generator.git
+cd qr-code-generator
 ```
 
-#### 2. Lancer le serveur
-
-```bash
-python manage.py runserver
-```
-
-#### 3. Ouvrir dans le navigateur
-
-Allez sur : **http://localhost:8000**
-
----
-
-## Fonctionnalités
-
-- **Design Neumorphisme** : Interface avec effet 3D subtil et ombres réalistes
-- **100% Responsive** : S'adapte parfaitement à tous les types d'écrans (mobile, tablette, desktop)
-- **Personnalisation complète** :
-  - Couleur du QR code
-  - Couleur du fond
-  - **Taille de la bordure** (0-20 pixels)
-  - **Cadre personnalisable** avec couleur et épaisseur (10-100 pixels)
-  - **Zone de texte entre le QR et le cadre** (ex: "Scan me!", "Suivez-nous")
-  - Logo personnalisé au centre
-- **Téléchargement facile** : Export en PNG haute qualité
-- **Temps réel** : Prévisualisation instantanée des couleurs et validations
-- **Feedback visuel** : Animations fluides et retours utilisateur clairs
-
----
-
-## Installation Complète
-
-### Prérequis
-
-- Python 3.8 ou supérieur
-- pip
-
-### Étapes d'installation
-
-1. Clonez le dépôt ou naviguez vers le dossier du projet
-
-2. Créez un environnement virtuel :
+### 2. Créer un environnement virtuel
 
 ```bash
 python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate  # Windows
 ```
 
-3. Activez l'environnement virtuel :
-
-   - Linux/Mac :
-     ```bash
-     source venv/bin/activate
-     ```
-   - Windows :
-     ```bash
-     venv\Scripts\activate
-     ```
-
-4. Installez les dépendances :
+### 3. Installer les dépendances
 
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Lancez le serveur de développement :
+### 4. Migrations de la base de données
+
+```bash
+python manage.py migrate
+```
+
+### 5. Collecter les fichiers statiques
+
+```bash
+python manage.py collectstatic --noinput
+```
+
+### 6. Lancer le serveur de développement
 
 ```bash
 python manage.py runserver
 ```
 
-6. Ouvrez votre navigateur et accédez à :
+L'application sera accessible sur `http://127.0.0.1:8000/`
 
-```
-http://localhost:8000
-```
+## 🌐 Déploiement
 
----
+### Déploiement sur Render (Gratuit avec HTTPS)
 
-## Guide d'Utilisation
+1. **Fork ou push le projet sur GitHub**
 
-### Créer un QR code basique
+2. **Créer un compte sur [render.com](https://render.com)**
 
-1. Entrez votre texte ou URL dans le champ "Texte ou URL" (jusqu'à 500 caractères)
-2. Cliquez sur "Générer le QR Code"
-3. Votre QR code apparaît à droite
-4. Cliquez sur "Télécharger" pour le sauvegarder
+3. **Le projet est déjà configuré avec** :
 
-### Personnaliser les couleurs
+   - `render.yaml` - Configuration automatique
+   - Variables d'environnement sécurisées
+   - Base de données PostgreSQL gratuite
+   - SSL/HTTPS automatique
 
-1. **Couleur du QR** : Cliquez sur le sélecteur de couleur et choisissez votre couleur préférée
-2. **Couleur de fond** : Sélectionnez la couleur d'arrière-plan
-3. Prévisualisation en temps réel avec code hexadécimal
-4. Générez votre QR code
+4. **Cliquer sur "New Web Service" et connecter votre repo GitHub**
 
-### Ajuster la bordure
+5. **Render détectera automatiquement la configuration**
 
-- Définissez la taille de la bordure (0 = sans bordure, 20 = bordure maximale)
-- Valeur par défaut : 4 pixels
+L'app sera live en ~5 minutes sur `https://votre-app.onrender.com`
 
-### Ajouter un cadre personnalisé
+### Variables d'environnement
 
-1. **Activer le cadre** : Cliquez sur le toggle switch "Ajouter un cadre"
-2. **Épaisseur du cadre** : Choisissez entre 10 et 100 pixels
-3. **Couleur du cadre** : Sélectionnez la couleur souhaitée
-4. **Texte personnalisé** : Ajoutez un texte entre le QR et le cadre (ex: "Scan me!", "Suivez-nous")
-   - Le texte apparaît dans une zone contrastante pour une meilleure lisibilité
-   - La couleur du texte s'ajuste automatiquement selon la couleur du cadre
+Les variables suivantes sont générées automatiquement par Render :
 
-### Ajouter un logo
+- `SECRET_KEY` - Clé secrète Django (générée automatiquement)
+- `DEBUG` - Mode debug (False en production)
+- `DATABASE_URL` - URL de la base PostgreSQL
 
-1. Cliquez sur "Ajouter une image/logo"
-2. Sélectionnez votre fichier image (PNG, JPG, GIF, etc.)
-3. Le nom du fichier s'affiche sous le bouton
-4. Le logo sera centré et redimensionné automatiquement (1/5 de la taille du QR)
-
-### Télécharger
-
-Cliquez sur "Télécharger" pour sauvegarder en PNG (nom unique avec timestamp)
-
----
-
-## Exemples de Couleurs Populaires
-
-- **Classique** : Noir (#000000) sur Blanc (#FFFFFF)
-- **Moderne** : Violet (#764ba2) sur Blanc (#FFFFFF)
-- **Tech** : Bleu (#2563eb) sur Gris clair (#f3f4f6)
-- **Nature** : Vert (#16a34a) sur Crème (#fef3c7)
-
----
-
-## Structure du Projet
+## 📁 Structure du Projet
 
 ```
 qr-code-generator/
-├── manage.py
-├── requirements.txt
-├── README.md
-├── db.sqlite3
-├── qr_code_generator/       # Configuration Django
-│   ├── __init__.py
-│   ├── settings.py
+├── qr_code_generator/      # Configuration Django
+│   ├── settings.py         # Settings (production ready)
 │   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-├── qr_code_app/             # Application principale
-│   ├── __init__.py
-│   ├── views.py
-│   ├── forms.py
-│   └── urls.py
-├── templates/               # Templates HTML
-│   └── qr_code/
-│       └── generator.html
-└── static/                  # Fichiers statiques
-    ├── css/
-    │   └── style.css
-    └── js/
-        └── script.js
+│   └── wsgi.py
+├── qr_code_app/            # Application principale
+│   ├── views.py            # Logique métier et APIs
+│   ├── forms.py            # Formulaires Django
+│   ├── urls.py             # Routes
+│   └── templates/          # Templates HTML
+├── static/                 # Fichiers statiques
+│   ├── css/
+│   │   └── style.css       # Design neumorphique
+│   └── js/
+│       └── script.js       # Interactions client
+├── requirements.txt        # Dépendances Python
+├── render.yaml            # Config déploiement Render
+└── README.md              # Ce fichier
 ```
 
----
+## 🎯 Utilisation
 
-## Technologies Utilisées
+### Générer un QR code simple
 
-- **Backend** : Django 6.0
-- **Génération QR** : qrcode avec PIL/Pillow
-- **Frontend** : HTML5, CSS3 (Grid, Flexbox, Variables CSS), JavaScript ES6+
-- **Design** : Neumorphisme avec ombres multiples et effets 3D
-- **Responsive** : Media queries pour tous les breakpoints (360px à 4K)
+1. Sélectionner le template **"Texte/URL"**
+2. Entrer votre texte ou URL
+3. Personnaliser les couleurs (optionnel)
+4. L'aperçu se génère automatiquement
+5. Télécharger en PNG, SVG ou PDF
 
----
+### Créer une carte de visite (vCard)
 
-## Fonctionnalités Techniques
+1. Sélectionner le template **"vCard"**
+2. Remplir vos informations (nom, entreprise, téléphone, email, site web)
+3. Personnaliser le design
+4. Télécharger et partager
 
-### Design & UI
+### Générer des QR codes en masse
 
-- **Neumorphisme** : Ombres doubles (light/dark) pour effet 3D
-- Variables CSS pour personnalisation facile
-- Animations avec cubic-bezier pour fluidité
-- Typography responsive avec clamp()
-- Color pickers natifs HTML5 stylisés
-- Toggle switch neumorphique non-clickable sur le label
+1. Préparer un fichier CSV avec le format :
+   ```csv
+   text,filename
+   https://example.com,site_web
+   WIFI:T:WPA;S:MonWiFi;P:password123;;,wifi_bureau
+   ```
+2. Aller dans la section **"Génération en Batch"**
+3. Uploader le CSV (drag & drop supporté)
+4. Télécharger le ZIP contenant tous les QR codes
 
-### Performance
+## 🔌 API Endpoints
 
-- Grid CSS pour layout optimisé
-- Transitions GPU-accelerated
-- Media queries spécifiques (portrait, landscape, small screens)
-- Images optimisées avec base64
+### Aperçu en temps réel
 
-### Backend
+```
+POST /api/preview
+Content-Type: application/json
 
-- Génération QR en mémoire (BytesIO)
-- Support bordure personnalisable (0-20px)
-- Support cadre avec zone de texte contrastante
-- Validation formulaire côté client et serveur
-- Gestion sécurisée des uploads
-- Contraste automatique pour la lisibilité du texte
-
-### JavaScript
-
-- Validation en temps réel
-- Feedback visuel immédiat
-- Contraste automatique pour lisibilité
-- Download avec timestamp unique
-- Toggle functionality pour options de cadre
-
----
-
-## Conseils d'Utilisation
-
-- Utilisez des couleurs contrastées pour une meilleure lisibilité
-- Gardez le logo petit (il sera automatiquement redimensionné à 1/5 de la taille du QR)
-- Testez toujours votre QR code avec un scanner avant utilisation
-- Pour les logos, utilisez des images avec fond transparent (PNG) pour un meilleur rendu
-- Le texte sur la zone entre le QR et le cadre s'ajuste automatiquement pour rester lisible
-
----
-
-## Dépannage
-
-### Le serveur ne démarre pas ?
-
-Assurez-vous que l'environnement virtuel est activé et que les dépendances sont installées :
-
-```bash
-pip install -r requirements.txt
+{
+  "template_type": "text",
+  "text": "Hello World",
+  "fill_color": "#000000",
+  "bg_color": "#FFFFFF",
+  "border_size": 4
+}
 ```
 
-### Les styles CSS ne se chargent pas ?
+### Génération en batch
 
-Vérifiez que le dossier `static/` existe et contient `css/style.css` et `js/script.js`
+```
+POST /api/batch
+Content-Type: multipart/form-data
 
-### Erreur lors de l'upload du logo ?
+csv_file: [fichier CSV]
+```
 
-Vérifiez que votre fichier est une image valide (PNG, JPG, GIF, etc.)
+### Export PDF
 
-### Le texte n'apparaît pas sur le cadre ?
+```
+POST /api/export-pdf
+Content-Type: application/json
 
-Assurez-vous que :
-1. Le toggle "Ajouter un cadre" est activé
-2. Vous avez saisi du texte dans le champ "Texte sur le cadre"
-3. La largeur du cadre est suffisante (minimum 10 pixels)
+{
+  "template_type": "text",
+  "text": "Hello World",
+  "fill_color": "#667eea",
+  "use_gradient": "true",
+  ...
+}
+```
+
+## 🎨 Personnalisation
+
+### Modifier les couleurs du thème
+
+Éditer `static/css/style.css` :
+
+```css
+:root {
+  --bg-main: #e0e5ec;
+  --shadow-light: #ffffff;
+  --shadow-dark: #a3b1c6;
+  --text-primary: #2c3e50;
+  --accent: #667eea;
+}
+
+:root[data-theme="dark"] {
+  --bg-main: #1a1a2e;
+  --shadow-light: #252947;
+  --shadow-dark: #0f1419;
+  --text-primary: #e0e5ec;
+  --accent: #818cf8;
+}
+```
+
+### Ajouter un nouveau template
+
+1. Ajouter les champs dans `qr_code_app/forms.py`
+2. Créer la fonction de formatage dans `qr_code_app/views.py`
+3. Ajouter les champs UI dans `templates/qr_code/generator.html`
+4. Mettre à jour le JavaScript dans `static/js/script.js`
+
+## 🛠️ Technologies Utilisées
+
+- **Backend** : Django 5.0+, Python 3.11+
+- **QR Generation** : python-qrcode, Pillow
+- **PDF Export** : ReportLab
+- **Frontend** : Vanilla JavaScript, CSS3 (Neumorphism)
+- **Déploiement** : Render, PostgreSQL
+- **CI/CD** : GitHub Actions ready
+
+## 📊 Statistiques du Projet
+
+- **8 templates** spécialisés
+- **15+ options** de personnalisation
+- **3 formats** d'export (PNG, SVG, PDF)
+- **Génération en batch** illimitée
+- **100% responsive** (mobile, tablette, desktop)
+- **Mode sombre** natif
+- **Aperçu temps réel** (< 500ms)
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Pour contribuer :
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'Ajout feature incredible'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📝 Roadmap
+
+### Version 1.3 (En cours)
+
+- [x] Templates spécialisés (vCard, WiFi, Email, SMS, Event, Geo, Payment)
+- [x] Personnalisation design avancée (gradient, modules, formes)
+- [x] Export SVG et PDF haute résolution
+- [x] Génération en batch (CSV → ZIP)
+- [x] Mode sombre
+- [x] Historique localStorage
+
+### Version 2.0 (Futur)
+
+- [ ] QR codes dynamiques (trackables)
+- [ ] Analytics et statistiques de scans
+- [ ] API publique avec authentification
+- [ ] Système utilisateur et dashboard
+- [ ] Plans Premium (Free/Pro)
+- [ ] Intégration Cloud Storage (S3)
+
+## 📄 License
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 👨‍💻 Auteur
+
+Développé avec tant d'affection.
+
+## 🔗 Liens Utiles
+
+- [Documentation Django](https://docs.djangoproject.com/)
+- [python-qrcode](https://github.com/lincolnloop/python-qrcode)
+- [ReportLab Documentation](https://www.reportlab.com/docs/reportlab-userguide.pdf)
+- [Neumorphism Design](https://neumorphism.io/)
+
+## 🙏 Remerciements
+
+- Design inspiré par [Neumorphism.io](https://neumorphism.io/)
+- QR Code library par [lincolnloop](https://github.com/lincolnloop/python-qrcode)
+- PDF generation par [ReportLab](https://www.reportlab.com/)
 
 ---
 
-## Licence
-
-Ce projet est libre d'utilisation pour vos projets personnels et commerciaux.
+⭐ **Si ce projet vous a aidé, n'oubliez pas de donner une étoile !** ⭐

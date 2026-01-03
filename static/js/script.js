@@ -26,6 +26,61 @@ document.addEventListener('DOMContentLoaded', function() {
         themeToggle.classList.toggle('active');
     });
 
+    // ========== GESTION DES ACCORDÉONS ==========
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const accordionId = this.getAttribute('data-accordion');
+            const accordionBody = document.getElementById(accordionId);
+
+            // Toggle active class on header
+            this.classList.toggle('active');
+
+            // Toggle active class on body
+            if (accordionBody) {
+                accordionBody.classList.toggle('active');
+            }
+        });
+    });
+
+    // Ouvre l'accordéon "Personnalisation QR" par défaut
+    const qrCustomizationHeader = document.querySelector('[data-accordion="qr-customization"]');
+    const qrCustomizationBody = document.getElementById('qr-customization');
+    if (qrCustomizationHeader && qrCustomizationBody) {
+        qrCustomizationHeader.classList.add('active');
+        qrCustomizationBody.classList.add('active');
+    }
+
+    // ========== BOUTON OPTIONS AVANCÉES ==========
+    const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+    const advancedOptions = document.getElementById('advanced-options');
+
+    if (advancedOptionsToggle && advancedOptions) {
+        advancedOptionsToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+
+            if (advancedOptions.style.display === 'none') {
+                advancedOptions.style.display = 'block';
+                this.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Masquer les options avancées
+                `;
+            } else {
+                advancedOptions.style.display = 'none';
+                this.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Options avancées
+                `;
+            }
+        });
+    }
+
     // ========== SWITCH DE TEMPLATES ==========
     const templateRadios = document.querySelectorAll('.template-radio');
     const templateFieldsSections = document.querySelectorAll('.template-fields');
@@ -47,11 +102,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     templateRadios.forEach(radio => {
         radio.addEventListener('change', function() {
+            // Sauvegarde le template sélectionné dans localStorage
+            localStorage.setItem('selectedTemplate', this.value);
             switchTemplate();
             // Déclenche la mise à jour de l'aperçu quand le template change
             debouncedPreview();
         });
     });
+
+    // Restaure le template sauvegardé
+    const savedTemplate = localStorage.getItem('selectedTemplate');
+    if (savedTemplate) {
+        const savedRadio = document.querySelector(`.template-radio[value="${savedTemplate}"]`);
+        if (savedRadio) {
+            savedRadio.checked = true;
+        }
+    }
 
     // Initialise l'affichage du template
     switchTemplate();
@@ -210,6 +276,207 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== GESTION CARTE DE VISITE ==========
+    const businessCardToggle = document.getElementById('id_enable_business_card');
+    const businessCardOptions = document.getElementById('business-card-options');
+
+    function toggleBusinessCardOptions() {
+        if (businessCardToggle && businessCardOptions) {
+            if (businessCardToggle.checked) {
+                businessCardOptions.classList.add('active');
+            } else {
+                businessCardOptions.classList.remove('active');
+            }
+        }
+    }
+
+    if (businessCardToggle) {
+        toggleBusinessCardOptions();
+        businessCardToggle.addEventListener('change', toggleBusinessCardOptions);
+    }
+
+    // Synchronisation des color pickers pour la carte de visite
+    const cardBgColorInput = document.getElementById('id_card_bg_color');
+    const cardTextColorInput = document.getElementById('id_card_text_color');
+    const cardAccentColorInput = document.getElementById('id_card_accent_color');
+
+    if (cardBgColorInput) {
+        const preview = document.getElementById('card-bg-color-preview');
+        cardBgColorInput.addEventListener('input', function() {
+            preview.textContent = this.value.toUpperCase();
+            preview.style.background = this.value;
+            preview.style.color = getContrastColor(this.value);
+        });
+        preview.textContent = cardBgColorInput.value.toUpperCase();
+        preview.style.background = cardBgColorInput.value;
+        preview.style.color = getContrastColor(cardBgColorInput.value);
+    }
+
+    if (cardTextColorInput) {
+        const preview = document.getElementById('card-text-color-preview');
+        cardTextColorInput.addEventListener('input', function() {
+            preview.textContent = this.value.toUpperCase();
+            preview.style.background = this.value;
+            preview.style.color = getContrastColor(this.value);
+        });
+        preview.textContent = cardTextColorInput.value.toUpperCase();
+        preview.style.background = cardTextColorInput.value;
+        preview.style.color = getContrastColor(cardTextColorInput.value);
+    }
+
+    if (cardAccentColorInput) {
+        const preview = document.getElementById('card-accent-color-preview');
+        cardAccentColorInput.addEventListener('input', function() {
+            preview.textContent = this.value.toUpperCase();
+            preview.style.background = this.value;
+            preview.style.color = getContrastColor(this.value);
+        });
+        preview.textContent = cardAccentColorInput.value.toUpperCase();
+        preview.style.background = cardAccentColorInput.value;
+        preview.style.color = getContrastColor(cardAccentColorInput.value);
+    }
+
+    // ========== APERÇU CARTE DE VISITE ==========
+    const businessCardPreview = document.getElementById('business-card-preview');
+    const cardPreviewName = document.getElementById('card-preview-name');
+    const cardPreviewOrg = document.getElementById('card-preview-org');
+    const cardPreviewPhone = document.getElementById('card-preview-phone');
+    const cardPreviewEmail = document.getElementById('card-preview-email');
+    const cardPreviewUrl = document.getElementById('card-preview-url');
+
+    function updateBusinessCardPreview() {
+        if (!businessCardPreview) return;
+
+        // Met à jour les couleurs
+        const bgColor = cardBgColorInput?.value || '#FFFFFF';
+        const textColor = cardTextColorInput?.value || '#2c3e50';
+        const accentColor = cardAccentColorInput?.value || '#667eea';
+
+        businessCardPreview.style.background = bgColor;
+        businessCardPreview.style.color = textColor;
+
+        // Met à jour le layout
+        const layout = document.getElementById('id_card_layout')?.value || 'left';
+        businessCardPreview.className = `business-card-preview layout-${layout}`;
+
+        // Met à jour le contenu
+        const name = document.getElementById('id_vcard_name')?.value || 'Votre Nom';
+        const org = document.getElementById('id_vcard_org')?.value || 'Votre Organisation';
+        const phone = document.getElementById('id_vcard_phone')?.value || 'Téléphone';
+        const email = document.getElementById('id_vcard_email')?.value || 'Email';
+        const url = document.getElementById('id_vcard_url')?.value || 'Site web';
+
+        if (cardPreviewName) cardPreviewName.textContent = name;
+        if (cardPreviewOrg) {
+            cardPreviewOrg.textContent = org;
+            cardPreviewOrg.style.color = accentColor;
+        }
+        if (cardPreviewPhone) cardPreviewPhone.textContent = `📱 ${phone}`;
+        if (cardPreviewEmail) cardPreviewEmail.textContent = `✉️ ${email}`;
+        if (cardPreviewUrl) cardPreviewUrl.textContent = `🌐 ${url}`;
+
+        // Met à jour la couleur du QR code placeholder
+        const qrPlaceholder = document.getElementById('card-qr-placeholder');
+        if (qrPlaceholder) {
+            qrPlaceholder.querySelector('svg').style.stroke = textColor;
+        }
+    }
+
+    // Initialise l'aperçu
+    updateBusinessCardPreview();
+
+    // Met à jour l'aperçu quand les champs changent
+    const vcardFields = ['id_vcard_name', 'id_vcard_org', 'id_vcard_phone', 'id_vcard_email', 'id_vcard_url', 'id_card_layout'];
+    vcardFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', updateBusinessCardPreview);
+            field.addEventListener('change', updateBusinessCardPreview);
+        }
+    });
+
+    // Met à jour l'aperçu quand les couleurs changent
+    if (cardBgColorInput) cardBgColorInput.addEventListener('input', updateBusinessCardPreview);
+    if (cardTextColorInput) cardTextColorInput.addEventListener('input', updateBusinessCardPreview);
+    if (cardAccentColorInput) cardAccentColorInput.addEventListener('input', updateBusinessCardPreview);
+
+    // Téléchargement de la carte de visite
+    const downloadBusinessCardBtn = document.getElementById('download-business-card');
+    if (downloadBusinessCardBtn) {
+        downloadBusinessCardBtn.addEventListener('click', async function() {
+            // Vérifie que le template vCard est sélectionné
+            const selectedTemplate = document.querySelector('.template-radio:checked')?.value;
+            if (selectedTemplate !== 'vcard') {
+                alert('La carte de visite est uniquement disponible pour le template vCard');
+                return;
+            }
+
+            // Vérifie que les données vCard minimales sont présentes
+            const vcardName = document.getElementById('id_vcard_name')?.value;
+            if (!vcardName) {
+                alert('Le nom est requis pour générer la carte de visite');
+                return;
+            }
+
+            // Collecte les données
+            const data = {
+                template_type: 'vcard',
+                vcard_name: vcardName,
+                vcard_org: document.getElementById('id_vcard_org')?.value || '',
+                vcard_phone: document.getElementById('id_vcard_phone')?.value || '',
+                vcard_email: document.getElementById('id_vcard_email')?.value || '',
+                vcard_url: document.getElementById('id_vcard_url')?.value || '',
+                card_layout: document.getElementById('id_card_layout')?.value || 'left',
+                card_bg_color: cardBgColorInput?.value || '#FFFFFF',
+                card_text_color: cardTextColorInput?.value || '#2c3e50',
+                card_accent_color: cardAccentColorInput?.value || '#667eea'
+            };
+
+            try {
+                // Désactive le bouton pendant le téléchargement
+                downloadBusinessCardBtn.disabled = true;
+                downloadBusinessCardBtn.textContent = 'Génération en cours...';
+
+                const response = await fetch('/api/export-business-card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    // Télécharge le PDF
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `carte_visite_${vcardName.replace(' ', '_')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + (error.error || 'Erreur lors de la génération'));
+                }
+            } catch (error) {
+                alert('Erreur lors de la génération de la carte: ' + error.message);
+            } finally {
+                // Réactive le bouton
+                downloadBusinessCardBtn.disabled = false;
+                downloadBusinessCardBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Télécharger Carte PDF
+                `;
+            }
+        });
+    }
+
     // Fonctionnalité de téléchargement PNG
     const downloadPngBtn = document.getElementById('download-png-btn');
     if (downloadPngBtn) {
@@ -321,6 +588,107 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Fonctionnalité de téléchargement PDF
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
+    if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            // Récupère le template sélectionné et collecte les données
+            const selectedTemplate = document.querySelector('.template-radio:checked')?.value || 'text';
+
+            // Collecte les données communes
+            const formData = {
+                template_type: selectedTemplate,
+                fill_color: fillColorInput?.value || '#000000',
+                bg_color: bgColorInput?.value || '#FFFFFF',
+                border_size: borderInput?.value || '4',
+                enable_frame: frameToggle?.checked ? 'true' : 'false',
+                frame_width: frameWidthInput?.value || '30',
+                frame_color: frameColorInput?.value || '#FFFFFF',
+                frame_text: document.getElementById('id_frame_text')?.value || '',
+                use_gradient: gradientToggle?.checked ? 'true' : 'false',
+                gradient_color_start: gradientStartInput?.value || '#667eea',
+                gradient_color_end: gradientEndInput?.value || '#764ba2',
+                gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
+                module_style: document.getElementById('id_module_style')?.value || 'square',
+                global_shape: document.getElementById('id_global_shape')?.value || 'square',
+                timestamp: Date.now()
+            };
+
+            // Collecte les données spécifiques au template
+            if (selectedTemplate === 'text') {
+                formData.text = textInput?.value.trim() || '';
+            } else if (selectedTemplate === 'vcard') {
+                formData.vcard_name = document.getElementById('id_vcard_name')?.value || '';
+                formData.vcard_org = document.getElementById('id_vcard_org')?.value || '';
+                formData.vcard_phone = document.getElementById('id_vcard_phone')?.value || '';
+                formData.vcard_email = document.getElementById('id_vcard_email')?.value || '';
+                formData.vcard_url = document.getElementById('id_vcard_url')?.value || '';
+            } else if (selectedTemplate === 'wifi') {
+                formData.wifi_ssid = document.getElementById('id_wifi_ssid')?.value || '';
+                formData.wifi_password = document.getElementById('id_wifi_password')?.value || '';
+                formData.wifi_security = document.getElementById('id_wifi_security')?.value || 'WPA';
+            } else if (selectedTemplate === 'email') {
+                formData.email_to = document.getElementById('id_email_to')?.value || '';
+                formData.email_subject = document.getElementById('id_email_subject')?.value || '';
+                formData.email_body = document.getElementById('id_email_body')?.value || '';
+            } else if (selectedTemplate === 'sms') {
+                formData.sms_phone = document.getElementById('id_sms_phone')?.value || '';
+                formData.sms_message = document.getElementById('id_sms_message')?.value || '';
+            } else if (selectedTemplate === 'event') {
+                formData.event_title = document.getElementById('id_event_title')?.value || '';
+                formData.event_start = document.getElementById('id_event_start')?.value || '';
+                formData.event_end = document.getElementById('id_event_end')?.value || '';
+                formData.event_location = document.getElementById('id_event_location')?.value || '';
+                formData.event_description = document.getElementById('id_event_description')?.value || '';
+            } else if (selectedTemplate === 'geo') {
+                formData.geo_latitude = document.getElementById('id_geo_latitude')?.value || '';
+                formData.geo_longitude = document.getElementById('id_geo_longitude')?.value || '';
+            } else if (selectedTemplate === 'payment') {
+                formData.payment_type = document.getElementById('id_payment_type')?.value || 'paypal';
+                formData.payment_recipient = document.getElementById('id_payment_recipient')?.value || '';
+                formData.payment_amount = document.getElementById('id_payment_amount')?.value || '';
+            }
+
+            try {
+                // Envoie la requête au backend
+                const response = await fetch('/api/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la génération du PDF');
+                }
+
+                // Télécharge le fichier PDF
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'qrcode_' + Date.now() + '.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                // Feedback visuel
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>OK';
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                }, 2000);
+
+            } catch (error) {
+                alert('Erreur lors du téléchargement du PDF: ' + error.message);
+            }
+        });
+    }
+
     // Aperçu en temps réel avec debounce
     const textInput = document.getElementById('id_text');
     const qrImage = document.getElementById('qr-img');
@@ -343,99 +711,153 @@ document.addEventListener('DOMContentLoaded', function() {
         // Affiche le spinner
         if (loadingSpinner) loadingSpinner.style.display = 'flex';
 
-        // Collecte les données communes
-        const formData = {
-            template_type: selectedTemplate,
-            fill_color: fillColorInput?.value || '#000000',
-            bg_color: bgColorInput?.value || '#FFFFFF',
-            border_size: borderInput?.value || '4',
-            enable_frame: frameToggle?.checked ? 'true' : 'false',
-            frame_width: frameWidthInput?.value || '30',
-            frame_color: frameColorInput?.value || '#FFFFFF',
-            frame_text: document.getElementById('id_frame_text')?.value || '',
-            use_gradient: gradientToggle?.checked ? 'true' : 'false',
-            gradient_color_start: gradientStartInput?.value || '#667eea',
-            gradient_color_end: gradientEndInput?.value || '#764ba2',
-            gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
-            module_style: document.getElementById('id_module_style')?.value || 'square',
-            global_shape: document.getElementById('id_global_shape')?.value || 'square'
+        // Récupère le fichier logo s'il existe
+        const logoInput = document.getElementById('id_logo');
+        const hasLogo = logoInput && logoInput.files && logoInput.files.length > 0;
+
+        // Utilise FormData si un logo est présent, sinon utilise JSON
+        let formData;
+        let isFormData = hasLogo;
+
+        if (isFormData) {
+            // Utilise FormData pour supporter le fichier
+            formData = new FormData();
+            formData.append('template_type', selectedTemplate);
+            formData.append('fill_color', fillColorInput?.value || '#000000');
+            formData.append('bg_color', bgColorInput?.value || '#FFFFFF');
+            formData.append('border_size', borderInput?.value || '4');
+            formData.append('enable_frame', frameToggle?.checked ? 'true' : 'false');
+            formData.append('frame_width', frameWidthInput?.value || '30');
+            formData.append('frame_color', frameColorInput?.value || '#FFFFFF');
+            formData.append('frame_text', document.getElementById('id_frame_text')?.value || '');
+            formData.append('use_gradient', gradientToggle?.checked ? 'true' : 'false');
+            formData.append('gradient_color_start', gradientStartInput?.value || '#667eea');
+            formData.append('gradient_color_end', gradientEndInput?.value || '#764ba2');
+            formData.append('gradient_direction', document.getElementById('id_gradient_direction')?.value || 'diagonal');
+            formData.append('module_style', document.getElementById('id_module_style')?.value || 'square');
+            formData.append('global_shape', document.getElementById('id_global_shape')?.value || 'square');
+            formData.append('logo', logoInput.files[0]);
+        } else {
+            // Utilise JSON comme avant
+            formData = {
+                template_type: selectedTemplate,
+                fill_color: fillColorInput?.value || '#000000',
+                bg_color: bgColorInput?.value || '#FFFFFF',
+                border_size: borderInput?.value || '4',
+                enable_frame: frameToggle?.checked ? 'true' : 'false',
+                frame_width: frameWidthInput?.value || '30',
+                frame_color: frameColorInput?.value || '#FFFFFF',
+                frame_text: document.getElementById('id_frame_text')?.value || '',
+                use_gradient: gradientToggle?.checked ? 'true' : 'false',
+                gradient_color_start: gradientStartInput?.value || '#667eea',
+                gradient_color_end: gradientEndInput?.value || '#764ba2',
+                gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
+                module_style: document.getElementById('id_module_style')?.value || 'square',
+                global_shape: document.getElementById('id_global_shape')?.value || 'square'
+            };
+        }
+
+        // Helper pour ajouter des données (compatible FormData et objet)
+        const addData = (key, value) => {
+            if (isFormData) {
+                formData.append(key, value);
+            } else {
+                formData[key] = value;
+            }
         };
 
         // Collecte les données spécifiques au template
         if (selectedTemplate === 'text') {
-            formData.text = textInput?.value.trim() || '';
-            if (!formData.text) {
+            const textValue = textInput?.value.trim() || '';
+            addData('text', textValue);
+            if (!textValue) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'vcard') {
-            formData.vcard_name = document.getElementById('id_vcard_name')?.value || '';
-            formData.vcard_org = document.getElementById('id_vcard_org')?.value || '';
-            formData.vcard_phone = document.getElementById('id_vcard_phone')?.value || '';
-            formData.vcard_email = document.getElementById('id_vcard_email')?.value || '';
-            formData.vcard_url = document.getElementById('id_vcard_url')?.value || '';
-            if (!formData.vcard_name && !formData.vcard_email && !formData.vcard_phone) {
+            const vcardName = document.getElementById('id_vcard_name')?.value || '';
+            const vcardEmail = document.getElementById('id_vcard_email')?.value || '';
+            const vcardPhone = document.getElementById('id_vcard_phone')?.value || '';
+            addData('vcard_name', vcardName);
+            addData('vcard_org', document.getElementById('id_vcard_org')?.value || '');
+            addData('vcard_phone', vcardPhone);
+            addData('vcard_email', vcardEmail);
+            addData('vcard_url', document.getElementById('id_vcard_url')?.value || '');
+            if (!vcardName && !vcardEmail && !vcardPhone) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'wifi') {
-            formData.wifi_ssid = document.getElementById('id_wifi_ssid')?.value || '';
-            formData.wifi_password = document.getElementById('id_wifi_password')?.value || '';
-            formData.wifi_security = document.getElementById('id_wifi_security')?.value || 'WPA';
-            if (!formData.wifi_ssid) {
+            const wifiSsid = document.getElementById('id_wifi_ssid')?.value || '';
+            addData('wifi_ssid', wifiSsid);
+            addData('wifi_password', document.getElementById('id_wifi_password')?.value || '');
+            addData('wifi_security', document.getElementById('id_wifi_security')?.value || 'WPA');
+            if (!wifiSsid) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'email') {
-            formData.email_to = document.getElementById('id_email_to')?.value || '';
-            formData.email_subject = document.getElementById('id_email_subject')?.value || '';
-            formData.email_body = document.getElementById('id_email_body')?.value || '';
-            if (!formData.email_to) {
+            const emailTo = document.getElementById('id_email_to')?.value || '';
+            addData('email_to', emailTo);
+            addData('email_subject', document.getElementById('id_email_subject')?.value || '');
+            addData('email_body', document.getElementById('id_email_body')?.value || '');
+            if (!emailTo) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'sms') {
-            formData.sms_phone = document.getElementById('id_sms_phone')?.value || '';
-            formData.sms_message = document.getElementById('id_sms_message')?.value || '';
-            if (!formData.sms_phone) {
+            const smsPhone = document.getElementById('id_sms_phone')?.value || '';
+            addData('sms_phone', smsPhone);
+            addData('sms_message', document.getElementById('id_sms_message')?.value || '');
+            if (!smsPhone) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'event') {
-            formData.event_title = document.getElementById('id_event_title')?.value || '';
-            formData.event_start = document.getElementById('id_event_start')?.value || '';
-            formData.event_end = document.getElementById('id_event_end')?.value || '';
-            formData.event_location = document.getElementById('id_event_location')?.value || '';
-            formData.event_description = document.getElementById('id_event_description')?.value || '';
-            if (!formData.event_title) {
+            const eventTitle = document.getElementById('id_event_title')?.value || '';
+            addData('event_title', eventTitle);
+            addData('event_start', document.getElementById('id_event_start')?.value || '');
+            addData('event_end', document.getElementById('id_event_end')?.value || '');
+            addData('event_location', document.getElementById('id_event_location')?.value || '');
+            addData('event_description', document.getElementById('id_event_description')?.value || '');
+            if (!eventTitle) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'geo') {
-            formData.geo_latitude = document.getElementById('id_geo_latitude')?.value || '';
-            formData.geo_longitude = document.getElementById('id_geo_longitude')?.value || '';
-            if (!formData.geo_latitude || !formData.geo_longitude) {
+            const geoLat = document.getElementById('id_geo_latitude')?.value || '';
+            const geoLon = document.getElementById('id_geo_longitude')?.value || '';
+            addData('geo_latitude', geoLat);
+            addData('geo_longitude', geoLon);
+            if (!geoLat || !geoLon) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'payment') {
-            formData.payment_type = document.getElementById('id_payment_type')?.value || 'paypal';
-            formData.payment_recipient = document.getElementById('id_payment_recipient')?.value || '';
-            formData.payment_amount = document.getElementById('id_payment_amount')?.value || '';
-            if (!formData.payment_recipient) {
+            const paymentRecipient = document.getElementById('id_payment_recipient')?.value || '';
+            addData('payment_type', document.getElementById('id_payment_type')?.value || 'paypal');
+            addData('payment_recipient', paymentRecipient);
+            addData('payment_amount', document.getElementById('id_payment_amount')?.value || '');
+            if (!paymentRecipient) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         }
 
-        // Appelle l'API
-        fetch('/api/preview', {
+        // Appelle l'API avec le bon format
+        const fetchOptions = {
             method: 'POST',
-            headers: {
+            body: isFormData ? formData : JSON.stringify(formData)
+        };
+
+        // N'ajoute le header Content-Type que pour JSON (FormData le gère automatiquement)
+        if (!isFormData) {
+            fetchOptions.headers = {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
+            };
+        }
+
+        fetch('/api/preview', fetchOptions)
         .then(response => response.json())
         .then(data => {
             if (data.success && qrImage) {
@@ -510,15 +932,20 @@ document.addEventListener('DOMContentLoaded', function() {
         gradientEndInput,
         document.getElementById('id_gradient_direction'),
         document.getElementById('id_module_style'),
-        document.getElementById('id_global_shape')
+        document.getElementById('id_global_shape'),
+        // Logo
+        document.getElementById('id_logo')
     ];
 
     previewInputs.forEach(input => {
         if (input) {
-            const eventType = input.type === 'checkbox' ? 'change' : 'input';
+            const eventType = (input.type === 'checkbox' || input.type === 'file') ? 'change' : 'input';
             input.addEventListener(eventType, debouncedPreview);
         }
     });
+
+    // Génère l'aperçu initial au chargement
+    debouncedPreview();
 });
 
 // ========== GÉNÉRATION EN BATCH ==========
