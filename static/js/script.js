@@ -455,99 +455,153 @@ document.addEventListener('DOMContentLoaded', function() {
         // Affiche le spinner
         if (loadingSpinner) loadingSpinner.style.display = 'flex';
 
-        // Collecte les données communes
-        const formData = {
-            template_type: selectedTemplate,
-            fill_color: fillColorInput?.value || '#000000',
-            bg_color: bgColorInput?.value || '#FFFFFF',
-            border_size: borderInput?.value || '4',
-            enable_frame: frameToggle?.checked ? 'true' : 'false',
-            frame_width: frameWidthInput?.value || '30',
-            frame_color: frameColorInput?.value || '#FFFFFF',
-            frame_text: document.getElementById('id_frame_text')?.value || '',
-            use_gradient: gradientToggle?.checked ? 'true' : 'false',
-            gradient_color_start: gradientStartInput?.value || '#667eea',
-            gradient_color_end: gradientEndInput?.value || '#764ba2',
-            gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
-            module_style: document.getElementById('id_module_style')?.value || 'square',
-            global_shape: document.getElementById('id_global_shape')?.value || 'square'
+        // Récupère le fichier logo s'il existe
+        const logoInput = document.getElementById('id_logo');
+        const hasLogo = logoInput && logoInput.files && logoInput.files.length > 0;
+
+        // Utilise FormData si un logo est présent, sinon utilise JSON
+        let formData;
+        let isFormData = hasLogo;
+
+        if (isFormData) {
+            // Utilise FormData pour supporter le fichier
+            formData = new FormData();
+            formData.append('template_type', selectedTemplate);
+            formData.append('fill_color', fillColorInput?.value || '#000000');
+            formData.append('bg_color', bgColorInput?.value || '#FFFFFF');
+            formData.append('border_size', borderInput?.value || '4');
+            formData.append('enable_frame', frameToggle?.checked ? 'true' : 'false');
+            formData.append('frame_width', frameWidthInput?.value || '30');
+            formData.append('frame_color', frameColorInput?.value || '#FFFFFF');
+            formData.append('frame_text', document.getElementById('id_frame_text')?.value || '');
+            formData.append('use_gradient', gradientToggle?.checked ? 'true' : 'false');
+            formData.append('gradient_color_start', gradientStartInput?.value || '#667eea');
+            formData.append('gradient_color_end', gradientEndInput?.value || '#764ba2');
+            formData.append('gradient_direction', document.getElementById('id_gradient_direction')?.value || 'diagonal');
+            formData.append('module_style', document.getElementById('id_module_style')?.value || 'square');
+            formData.append('global_shape', document.getElementById('id_global_shape')?.value || 'square');
+            formData.append('logo', logoInput.files[0]);
+        } else {
+            // Utilise JSON comme avant
+            formData = {
+                template_type: selectedTemplate,
+                fill_color: fillColorInput?.value || '#000000',
+                bg_color: bgColorInput?.value || '#FFFFFF',
+                border_size: borderInput?.value || '4',
+                enable_frame: frameToggle?.checked ? 'true' : 'false',
+                frame_width: frameWidthInput?.value || '30',
+                frame_color: frameColorInput?.value || '#FFFFFF',
+                frame_text: document.getElementById('id_frame_text')?.value || '',
+                use_gradient: gradientToggle?.checked ? 'true' : 'false',
+                gradient_color_start: gradientStartInput?.value || '#667eea',
+                gradient_color_end: gradientEndInput?.value || '#764ba2',
+                gradient_direction: document.getElementById('id_gradient_direction')?.value || 'diagonal',
+                module_style: document.getElementById('id_module_style')?.value || 'square',
+                global_shape: document.getElementById('id_global_shape')?.value || 'square'
+            };
+        }
+
+        // Helper pour ajouter des données (compatible FormData et objet)
+        const addData = (key, value) => {
+            if (isFormData) {
+                formData.append(key, value);
+            } else {
+                formData[key] = value;
+            }
         };
 
         // Collecte les données spécifiques au template
         if (selectedTemplate === 'text') {
-            formData.text = textInput?.value.trim() || '';
-            if (!formData.text) {
+            const textValue = textInput?.value.trim() || '';
+            addData('text', textValue);
+            if (!textValue) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'vcard') {
-            formData.vcard_name = document.getElementById('id_vcard_name')?.value || '';
-            formData.vcard_org = document.getElementById('id_vcard_org')?.value || '';
-            formData.vcard_phone = document.getElementById('id_vcard_phone')?.value || '';
-            formData.vcard_email = document.getElementById('id_vcard_email')?.value || '';
-            formData.vcard_url = document.getElementById('id_vcard_url')?.value || '';
-            if (!formData.vcard_name && !formData.vcard_email && !formData.vcard_phone) {
+            const vcardName = document.getElementById('id_vcard_name')?.value || '';
+            const vcardEmail = document.getElementById('id_vcard_email')?.value || '';
+            const vcardPhone = document.getElementById('id_vcard_phone')?.value || '';
+            addData('vcard_name', vcardName);
+            addData('vcard_org', document.getElementById('id_vcard_org')?.value || '');
+            addData('vcard_phone', vcardPhone);
+            addData('vcard_email', vcardEmail);
+            addData('vcard_url', document.getElementById('id_vcard_url')?.value || '');
+            if (!vcardName && !vcardEmail && !vcardPhone) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'wifi') {
-            formData.wifi_ssid = document.getElementById('id_wifi_ssid')?.value || '';
-            formData.wifi_password = document.getElementById('id_wifi_password')?.value || '';
-            formData.wifi_security = document.getElementById('id_wifi_security')?.value || 'WPA';
-            if (!formData.wifi_ssid) {
+            const wifiSsid = document.getElementById('id_wifi_ssid')?.value || '';
+            addData('wifi_ssid', wifiSsid);
+            addData('wifi_password', document.getElementById('id_wifi_password')?.value || '');
+            addData('wifi_security', document.getElementById('id_wifi_security')?.value || 'WPA');
+            if (!wifiSsid) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'email') {
-            formData.email_to = document.getElementById('id_email_to')?.value || '';
-            formData.email_subject = document.getElementById('id_email_subject')?.value || '';
-            formData.email_body = document.getElementById('id_email_body')?.value || '';
-            if (!formData.email_to) {
+            const emailTo = document.getElementById('id_email_to')?.value || '';
+            addData('email_to', emailTo);
+            addData('email_subject', document.getElementById('id_email_subject')?.value || '');
+            addData('email_body', document.getElementById('id_email_body')?.value || '');
+            if (!emailTo) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'sms') {
-            formData.sms_phone = document.getElementById('id_sms_phone')?.value || '';
-            formData.sms_message = document.getElementById('id_sms_message')?.value || '';
-            if (!formData.sms_phone) {
+            const smsPhone = document.getElementById('id_sms_phone')?.value || '';
+            addData('sms_phone', smsPhone);
+            addData('sms_message', document.getElementById('id_sms_message')?.value || '');
+            if (!smsPhone) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'event') {
-            formData.event_title = document.getElementById('id_event_title')?.value || '';
-            formData.event_start = document.getElementById('id_event_start')?.value || '';
-            formData.event_end = document.getElementById('id_event_end')?.value || '';
-            formData.event_location = document.getElementById('id_event_location')?.value || '';
-            formData.event_description = document.getElementById('id_event_description')?.value || '';
-            if (!formData.event_title) {
+            const eventTitle = document.getElementById('id_event_title')?.value || '';
+            addData('event_title', eventTitle);
+            addData('event_start', document.getElementById('id_event_start')?.value || '');
+            addData('event_end', document.getElementById('id_event_end')?.value || '');
+            addData('event_location', document.getElementById('id_event_location')?.value || '');
+            addData('event_description', document.getElementById('id_event_description')?.value || '');
+            if (!eventTitle) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'geo') {
-            formData.geo_latitude = document.getElementById('id_geo_latitude')?.value || '';
-            formData.geo_longitude = document.getElementById('id_geo_longitude')?.value || '';
-            if (!formData.geo_latitude || !formData.geo_longitude) {
+            const geoLat = document.getElementById('id_geo_latitude')?.value || '';
+            const geoLon = document.getElementById('id_geo_longitude')?.value || '';
+            addData('geo_latitude', geoLat);
+            addData('geo_longitude', geoLon);
+            if (!geoLat || !geoLon) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         } else if (selectedTemplate === 'payment') {
-            formData.payment_type = document.getElementById('id_payment_type')?.value || 'paypal';
-            formData.payment_recipient = document.getElementById('id_payment_recipient')?.value || '';
-            formData.payment_amount = document.getElementById('id_payment_amount')?.value || '';
-            if (!formData.payment_recipient) {
+            const paymentRecipient = document.getElementById('id_payment_recipient')?.value || '';
+            addData('payment_type', document.getElementById('id_payment_type')?.value || 'paypal');
+            addData('payment_recipient', paymentRecipient);
+            addData('payment_amount', document.getElementById('id_payment_amount')?.value || '');
+            if (!paymentRecipient) {
                 if (loadingSpinner) loadingSpinner.style.display = 'none';
                 return;
             }
         }
 
-        // Appelle l'API
-        fetch('/api/preview', {
+        // Appelle l'API avec le bon format
+        const fetchOptions = {
             method: 'POST',
-            headers: {
+            body: isFormData ? formData : JSON.stringify(formData)
+        };
+
+        // N'ajoute le header Content-Type que pour JSON (FormData le gère automatiquement)
+        if (!isFormData) {
+            fetchOptions.headers = {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
+            };
+        }
+
+        fetch('/api/preview', fetchOptions)
         .then(response => response.json())
         .then(data => {
             if (data.success && qrImage) {
@@ -622,12 +676,14 @@ document.addEventListener('DOMContentLoaded', function() {
         gradientEndInput,
         document.getElementById('id_gradient_direction'),
         document.getElementById('id_module_style'),
-        document.getElementById('id_global_shape')
+        document.getElementById('id_global_shape'),
+        // Logo
+        document.getElementById('id_logo')
     ];
 
     previewInputs.forEach(input => {
         if (input) {
-            const eventType = input.type === 'checkbox' ? 'change' : 'input';
+            const eventType = (input.type === 'checkbox' || input.type === 'file') ? 'change' : 'input';
             input.addEventListener(eventType, debouncedPreview);
         }
     });

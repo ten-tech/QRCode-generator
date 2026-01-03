@@ -378,10 +378,16 @@ def generate_qr_image(text, fill_color="black", bg_color="white", border_size=4,
 def qr_preview_api(request):
     """
     Endpoint API pour l'aperçu en temps réel
-    Accept JSON POST et retourne l'image QR en base64
+    Accept JSON ou FormData POST et retourne l'image QR en base64
     """
     try:
-        data = json.loads(request.body)
+        # Vérifie si c'est du FormData (avec fichier) ou du JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            data = request.POST.dict()
+            logo_file = request.FILES.get('logo')
+        else:
+            data = json.loads(request.body)
+            logo_file = None
 
         # Récupère le type de template
         template_type = data.get('template_type', 'text')
@@ -458,6 +464,7 @@ def qr_preview_api(request):
             fill_color=fill_color,
             bg_color=bg_color,
             border_size=border_size,
+            logo=logo_file,
             enable_frame=enable_frame,
             frame_width=frame_width,
             frame_color=frame_color,
