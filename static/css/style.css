@@ -304,6 +304,9 @@ input[type="file"].neumorphic-file {
   height: 24px;
   display: inline-block;
   cursor: pointer;
+  flex-shrink: 0; /* Empêche le toggle d'être étiré par flexbox */
+  min-width: 45px; /* Force la largeur minimale */
+  max-width: 45px; /* Force la largeur maximale */
 }
 
 input[type="checkbox"].neumorphic-checkbox {
