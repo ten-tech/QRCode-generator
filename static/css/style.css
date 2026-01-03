@@ -1489,3 +1489,33 @@ input[type="checkbox"].neumorphic-checkbox:checked + .toggle-slider:after {
         max-height: calc(90vh - 40px);
     }
 }
+
+/* ========== CARTE DE VISITE ========== */
+.business-card-section {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    background: var(--bg-main);
+    box-shadow:
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+}
+
+.business-card-options {
+    margin-top: 15px;
+    display: none;
+}
+
+.business-card-options.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.download-btn-business-card {
+    width: 100%;
+    color: #e74c3c;
+}
+
+.download-btn-business-card:hover {
+    color: #c0392b;
+}

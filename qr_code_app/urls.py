@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/preview', views.qr_preview_api, name='qr_preview_api'),
     path('api/batch', views.batch_generate, name='batch_generate'),
     path('api/export-pdf', views.export_pdf, name='export_pdf'),
+    path('api/export-business-card', views.export_business_card, name='export_business_card'),
 ]  

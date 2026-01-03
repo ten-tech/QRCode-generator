@@ -221,6 +221,143 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== GESTION CARTE DE VISITE ==========
+    const businessCardToggle = document.getElementById('id_enable_business_card');
+    const businessCardOptions = document.getElementById('business-card-options');
+
+    function toggleBusinessCardOptions() {
+        if (businessCardToggle && businessCardOptions) {
+            if (businessCardToggle.checked) {
+                businessCardOptions.classList.add('active');
+            } else {
+                businessCardOptions.classList.remove('active');
+            }
+        }
+    }
+
+    if (businessCardToggle) {
+        toggleBusinessCardOptions();
+        businessCardToggle.addEventListener('change', toggleBusinessCardOptions);
+    }
+
+    // Synchronisation des color pickers pour la carte de visite
+    const cardBgColorInput = document.getElementById('id_card_bg_color');
+    const cardTextColorInput = document.getElementById('id_card_text_color');
+    const cardAccentColorInput = document.getElementById('id_card_accent_color');
+
+    if (cardBgColorInput) {
+        const preview = document.getElementById('card-bg-color-preview');
+        cardBgColorInput.addEventListener('input', function() {
+            preview.textContent = this.value.toUpperCase();
+            preview.style.background = this.value;
+            preview.style.color = getContrastColor(this.value);
+        });
+        preview.textContent = cardBgColorInput.value.toUpperCase();
+        preview.style.background = cardBgColorInput.value;
+        preview.style.color = getContrastColor(cardBgColorInput.value);
+    }
+
+    if (cardTextColorInput) {
+        const preview = document.getElementById('card-text-color-preview');
+        cardTextColorInput.addEventListener('input', function() {
+            preview.textContent = this.value.toUpperCase();
+            preview.style.background = this.value;
+            preview.style.color = getContrastColor(this.value);
+        });
+        preview.textContent = cardTextColorInput.value.toUpperCase();
+        preview.style.background = cardTextColorInput.value;
+        preview.style.color = getContrastColor(cardTextColorInput.value);
+    }
+
+    if (cardAccentColorInput) {
+        const preview = document.getElementById('card-accent-color-preview');
+        cardAccentColorInput.addEventListener('input', function() {
+            preview.textContent = this.value.toUpperCase();
+            preview.style.background = this.value;
+            preview.style.color = getContrastColor(this.value);
+        });
+        preview.textContent = cardAccentColorInput.value.toUpperCase();
+        preview.style.background = cardAccentColorInput.value;
+        preview.style.color = getContrastColor(cardAccentColorInput.value);
+    }
+
+    // Téléchargement de la carte de visite
+    const downloadBusinessCardBtn = document.getElementById('download-business-card');
+    if (downloadBusinessCardBtn) {
+        downloadBusinessCardBtn.addEventListener('click', async function() {
+            // Vérifie que le template vCard est sélectionné
+            const selectedTemplate = document.querySelector('.template-radio:checked')?.value;
+            if (selectedTemplate !== 'vcard') {
+                alert('La carte de visite est uniquement disponible pour le template vCard');
+                return;
+            }
+
+            // Vérifie que les données vCard minimales sont présentes
+            const vcardName = document.getElementById('id_vcard_name')?.value;
+            if (!vcardName) {
+                alert('Le nom est requis pour générer la carte de visite');
+                return;
+            }
+
+            // Collecte les données
+            const data = {
+                template_type: 'vcard',
+                vcard_name: vcardName,
+                vcard_org: document.getElementById('id_vcard_org')?.value || '',
+                vcard_phone: document.getElementById('id_vcard_phone')?.value || '',
+                vcard_email: document.getElementById('id_vcard_email')?.value || '',
+                vcard_url: document.getElementById('id_vcard_url')?.value || '',
+                card_layout: document.getElementById('id_card_layout')?.value || 'left',
+                card_bg_color: cardBgColorInput?.value || '#FFFFFF',
+                card_text_color: cardTextColorInput?.value || '#2c3e50',
+                card_accent_color: cardAccentColorInput?.value || '#667eea'
+            };
+
+            try {
+                // Désactive le bouton pendant le téléchargement
+                downloadBusinessCardBtn.disabled = true;
+                downloadBusinessCardBtn.textContent = 'Génération en cours...';
+
+                const response = await fetch('/api/export-business-card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    // Télécharge le PDF
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `carte_visite_${vcardName.replace(' ', '_')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + (error.error || 'Erreur lors de la génération'));
+                }
+            } catch (error) {
+                alert('Erreur lors de la génération de la carte: ' + error.message);
+            } finally {
+                // Réactive le bouton
+                downloadBusinessCardBtn.disabled = false;
+                downloadBusinessCardBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Télécharger Carte PDF
+                `;
+            }
+        });
+    }
+
     // Fonctionnalité de téléchargement PNG
     const downloadPngBtn = document.getElementById('download-png-btn');
     if (downloadPngBtn) {

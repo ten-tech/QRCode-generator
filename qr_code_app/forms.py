@@ -439,6 +439,56 @@ class QRCodeForm(forms.Form):
         })
     )
 
+    # Champs pour la génération de carte de visite (vCard uniquement)
+    enable_business_card = forms.BooleanField(
+        label="Générer carte de visite complète",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'neumorphic-checkbox'
+        })
+    )
+    card_layout = forms.ChoiceField(
+        label="Position du QR code",
+        required=False,
+        initial='left',
+        choices=[
+            ('left', 'QR à gauche'),
+            ('right', 'QR à droite'),
+            ('center', 'QR centré')
+        ],
+        widget=forms.Select(attrs={
+            'class': 'neumorphic-input'
+        })
+    )
+    card_bg_color = forms.CharField(
+        label="Couleur de fond carte",
+        required=False,
+        initial='#FFFFFF',
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'class': 'neumorphic-color'
+        })
+    )
+    card_text_color = forms.CharField(
+        label="Couleur du texte",
+        required=False,
+        initial='#2c3e50',
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'class': 'neumorphic-color'
+        })
+    )
+    card_accent_color = forms.CharField(
+        label="Couleur d'accent",
+        required=False,
+        initial='#667eea',
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'class': 'neumorphic-color'
+        })
+    )
+
 
 class BatchQRCodeForm(forms.Form):
     """Formulaire pour la génération en batch"""

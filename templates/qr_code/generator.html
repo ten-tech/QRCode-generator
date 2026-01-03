@@ -115,6 +115,59 @@
               <label for="id_vcard_url">{{ form.vcard_url.label }}</label>
               {{ form.vcard_url }}
             </div>
+
+            <!-- Section Carte de Visite (uniquement pour vCard) -->
+            <div class="business-card-section">
+              <div class="toggle-wrapper">
+                <label class="toggle-label">{{ form.enable_business_card.label }}</label>
+                <label class="toggle-switch">
+                  {{ form.enable_business_card }}
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="business-card-options" id="business-card-options">
+                <div class="form-group">
+                  <label for="id_card_layout">{{ form.card_layout.label }}</label>
+                  {{ form.card_layout }}
+                </div>
+
+                <div class="color-picker-group">
+                  <div class="color-picker">
+                    <label for="id_card_bg_color">{{ form.card_bg_color.label }}</label>
+                    <div class="color-input-wrapper">
+                      {{ form.card_bg_color }}
+                      <div class="color-preview" id="card-bg-color-preview">#FFFFFF</div>
+                    </div>
+                  </div>
+
+                  <div class="color-picker">
+                    <label for="id_card_text_color">{{ form.card_text_color.label }}</label>
+                    <div class="color-input-wrapper">
+                      {{ form.card_text_color }}
+                      <div class="color-preview" id="card-text-color-preview">#2c3e50</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="color-picker">
+                  <label for="id_card_accent_color">{{ form.card_accent_color.label }}</label>
+                  <div class="color-input-wrapper">
+                    {{ form.card_accent_color }}
+                    <div class="color-preview" id="card-accent-color-preview">#667eea</div>
+                  </div>
+                </div>
+
+                <button type="button" class="download-btn download-btn-business-card" id="download-business-card" style="margin-top: 15px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Télécharger Carte PDF
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- WiFi Template Fields -->
