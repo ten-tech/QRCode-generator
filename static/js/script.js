@@ -26,6 +26,61 @@ document.addEventListener('DOMContentLoaded', function() {
         themeToggle.classList.toggle('active');
     });
 
+    // ========== GESTION DES ACCORDÉONS ==========
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const accordionId = this.getAttribute('data-accordion');
+            const accordionBody = document.getElementById(accordionId);
+
+            // Toggle active class on header
+            this.classList.toggle('active');
+
+            // Toggle active class on body
+            if (accordionBody) {
+                accordionBody.classList.toggle('active');
+            }
+        });
+    });
+
+    // Ouvre l'accordéon "Personnalisation QR" par défaut
+    const qrCustomizationHeader = document.querySelector('[data-accordion="qr-customization"]');
+    const qrCustomizationBody = document.getElementById('qr-customization');
+    if (qrCustomizationHeader && qrCustomizationBody) {
+        qrCustomizationHeader.classList.add('active');
+        qrCustomizationBody.classList.add('active');
+    }
+
+    // ========== BOUTON OPTIONS AVANCÉES ==========
+    const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+    const advancedOptions = document.getElementById('advanced-options');
+
+    if (advancedOptionsToggle && advancedOptions) {
+        advancedOptionsToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+
+            if (advancedOptions.style.display === 'none') {
+                advancedOptions.style.display = 'block';
+                this.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Masquer les options avancées
+                `;
+            } else {
+                advancedOptions.style.display = 'none';
+                this.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Options avancées
+                `;
+            }
+        });
+    }
+
     // ========== SWITCH DE TEMPLATES ==========
     const templateRadios = document.querySelectorAll('.template-radio');
     const templateFieldsSections = document.querySelectorAll('.template-fields');
@@ -280,6 +335,70 @@ document.addEventListener('DOMContentLoaded', function() {
         preview.style.background = cardAccentColorInput.value;
         preview.style.color = getContrastColor(cardAccentColorInput.value);
     }
+
+    // ========== APERÇU CARTE DE VISITE ==========
+    const businessCardPreview = document.getElementById('business-card-preview');
+    const cardPreviewName = document.getElementById('card-preview-name');
+    const cardPreviewOrg = document.getElementById('card-preview-org');
+    const cardPreviewPhone = document.getElementById('card-preview-phone');
+    const cardPreviewEmail = document.getElementById('card-preview-email');
+    const cardPreviewUrl = document.getElementById('card-preview-url');
+
+    function updateBusinessCardPreview() {
+        if (!businessCardPreview) return;
+
+        // Met à jour les couleurs
+        const bgColor = cardBgColorInput?.value || '#FFFFFF';
+        const textColor = cardTextColorInput?.value || '#2c3e50';
+        const accentColor = cardAccentColorInput?.value || '#667eea';
+
+        businessCardPreview.style.background = bgColor;
+        businessCardPreview.style.color = textColor;
+
+        // Met à jour le layout
+        const layout = document.getElementById('id_card_layout')?.value || 'left';
+        businessCardPreview.className = `business-card-preview layout-${layout}`;
+
+        // Met à jour le contenu
+        const name = document.getElementById('id_vcard_name')?.value || 'Votre Nom';
+        const org = document.getElementById('id_vcard_org')?.value || 'Votre Organisation';
+        const phone = document.getElementById('id_vcard_phone')?.value || 'Téléphone';
+        const email = document.getElementById('id_vcard_email')?.value || 'Email';
+        const url = document.getElementById('id_vcard_url')?.value || 'Site web';
+
+        if (cardPreviewName) cardPreviewName.textContent = name;
+        if (cardPreviewOrg) {
+            cardPreviewOrg.textContent = org;
+            cardPreviewOrg.style.color = accentColor;
+        }
+        if (cardPreviewPhone) cardPreviewPhone.textContent = `📱 ${phone}`;
+        if (cardPreviewEmail) cardPreviewEmail.textContent = `✉️ ${email}`;
+        if (cardPreviewUrl) cardPreviewUrl.textContent = `🌐 ${url}`;
+
+        // Met à jour la couleur du QR code placeholder
+        const qrPlaceholder = document.getElementById('card-qr-placeholder');
+        if (qrPlaceholder) {
+            qrPlaceholder.querySelector('svg').style.stroke = textColor;
+        }
+    }
+
+    // Initialise l'aperçu
+    updateBusinessCardPreview();
+
+    // Met à jour l'aperçu quand les champs changent
+    const vcardFields = ['id_vcard_name', 'id_vcard_org', 'id_vcard_phone', 'id_vcard_email', 'id_vcard_url', 'id_card_layout'];
+    vcardFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', updateBusinessCardPreview);
+            field.addEventListener('change', updateBusinessCardPreview);
+        }
+    });
+
+    // Met à jour l'aperçu quand les couleurs changent
+    if (cardBgColorInput) cardBgColorInput.addEventListener('input', updateBusinessCardPreview);
+    if (cardTextColorInput) cardTextColorInput.addEventListener('input', updateBusinessCardPreview);
+    if (cardAccentColorInput) cardAccentColorInput.addEventListener('input', updateBusinessCardPreview);
 
     // Téléchargement de la carte de visite
     const downloadBusinessCardBtn = document.getElementById('download-business-card');
